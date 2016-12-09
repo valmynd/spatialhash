@@ -1,0 +1,48 @@
+{
+  "name": "spatialhash",
+  "version": "0.0.1",
+  "description": "Spatial Hash.",
+  "main": "dist/spatialhash.js",
+  "scripts": {
+    "test": "npm run build && ava",
+    "coverage": "npm run build && nyc ava",
+    "report-coverage": "npm run coverage && nyc report --reporter=lcov | codecov",
+    "build": "babel src --out-dir dist"
+  },
+  "ava": {
+    "files": "tests/*.js"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "transform-runtime"
+    ],
+    "env": {
+      "development": {
+        "sourceMaps": "inline"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/valmynd/spatialhash.git"
+  },
+  "keywords": [
+    "spatialhash"
+  ],
+  "author": "C. Wilhelm",
+  "license": "MIT",
+  "readmeFilename": "README",
+  "bugs": {
+    "url": "https://github.com/valmynd/spatialhash/issues"
+  },
+  "devDependencies": {
+    "ava": "^0.17.0",
+    "babel-cli": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0",
+    "codecov": "^1.0.1",
+    "nyc": "^10.0.0"
+  }
+}
