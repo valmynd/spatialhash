@@ -5,24 +5,23 @@ import {
   pointIsWithinRectangle,
   squaredDistanceBetweenPoints,
   squaredDistanceBetweenPointAndRectangle
-} from "./geometry"
+} from "./geometry";
 
 /**
  * Spatial Hash for Point Objects
- * Implementation is based on this very good article:
+ * Implementation is based on this very good tutorial:
  *    http://www.gamedev.net/page/resources/_/technical/game-programming/spatial-hashing-r2697
  */
 export class PointHash {
-  constructor(cell_size = 6, distance = squaredDistanceBetweenPoints, intersects = pointIsWithinRectangle,
-              encloses = pointIsWithinRectangle, removeDoublets = (array) => array) {
+  constructor(cell_size = 6) {
     this.objects = {} // maps object-ids to hash-keys (needed for removing objects)
     this.cells = {} // maps hash-keys to arrays of objects
     this.cell_size = cell_size // size of each cell in coordinate-space
     // Override the following methods, if objects are something else then points!
-    this.removeDoublets = removeDoublets
-    this.distance = distance
-    this.intersects = intersects
-    this.encloses = encloses
+    this.removeDoublets = (array) => array
+    this.distance = squaredDistanceBetweenPoints
+    this.intersects = pointIsWithinRectangle
+    this.encloses = pointIsWithinRectangle
   }
 
   clear() {
@@ -169,9 +168,12 @@ export class PointHash {
  *    http://www.gamedev.net/page/resources/_/technical/game-programming/spatial-hashing-r2697
  */
 export class RectHash extends PointHash {
-  constructor(cell_size = 6, distance = squaredDistanceBetweenPointAndRectangle, intersects = rectanglesIntersect,
-              encloses = rectangleIsWithinRectangle, removeDoublets = (array) => Array.from(new Set(array))) {
-    super(cell_size, distance, intersects, encloses, removeDoublets)
+  constructor(cell_size = 6) {
+    super(cell_size)
+    this.removeDoublets = (array) => Array.from(new Set(array))
+    this.distance = squaredDistanceBetweenPointAndRectangle
+    this.intersects = rectanglesIntersect
+    this.encloses = rectangleIsWithinRectangle
   }
 
   insert(obj) {
