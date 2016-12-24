@@ -13,12 +13,8 @@
  */
 
 /**
- * @typedef {Object} SpatialHashEntry
+ * @typedef {Rect|Point} SpatialHashEntry
  * @property {*} id
- * @property {number} x
- * @property {number} y
- * @property {number} [width]
- * @property {number} [height]
  */
 
 
@@ -167,7 +163,7 @@ export function getEdgesOfRect(rect) {
  * Calculate which candidate has the shortest distance to a given point
  * @param {Point} p
  * @param {SpatialHashEntry[]} candidates
- * @returns {*}
+ * @returns {SpatialHashEntry|null}
  */
 export function findNearestNeighbour(p, candidates) {
   let best_square_dist = Infinity, best = null, square_distance = null
