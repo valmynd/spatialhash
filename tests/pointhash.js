@@ -1,5 +1,5 @@
 import test from "ava";
-import {PointHash, RectHash} from "../dist/spatialhash";
+import {PointHash} from "../dist/spatialhash";
 
 
 test('PointHash.insert works correctly', t => {
@@ -148,7 +148,4 @@ test('PointHash.findNearestNeighbours works correctly', t => {
   ph.insert(third)
   t.deepEqual(ph.findNearestNeighbours({x: 110, y: 110}, 3, 200), [third, second, first])
 })
-
-
-const rh = new RectHash()
 

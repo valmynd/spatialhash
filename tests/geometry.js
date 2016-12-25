@@ -9,8 +9,7 @@ import {
   distanceBetweenPointAndRectangle,
   distanceBetweenRectangles,
   getCornersOfRect,
-  getEdgesOfRect,
-  findNearestNeighbour
+  getEdgesOfRect
 } from "../dist/geometry"
 
 test('rectanglesIntersect works correctly', t => {
@@ -67,18 +66,4 @@ test('getEdgesOfRect works correctly', t => {
     [{x: 100, y: 100}, {x: 0, y: 100}], // bottom
     [{x: 0, y: 100}, {x: 0, y: 0}]  // left
   ])
-})
-
-test('findNearestNeighbour works correctly', t => {
-  t.deepEqual(
-    findNearestNeighbour(
-      {x: 10, y: 10},
-      [
-        {x: 0, y: 0},
-        {x: 9, y: 9},
-        {x: 12, y: 12}
-      ]
-    ),
-    {x: 9, y: 9}
-  )
 })

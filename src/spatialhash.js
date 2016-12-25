@@ -1,5 +1,4 @@
 import {
-  findNearestNeighbour,
   rectanglesIntersect,
   rectangleIsWithinRectangle,
   pointIsWithinRectangle,
@@ -129,7 +128,7 @@ export class PointHash {
     //  │. ¹│²  Something outside the cell could be nearer! (that's why we start with radius=cell_size)
     // ─┼───┼─
     const {x, y} = p, d = this.cell_size
-    let candidates = [], key, contents, bx, by, radius = 0, visited = new Set()
+    let candidates = [], key, contents, bx, by, radius, visited = new Set()
     for (radius = d; candidates.length < k; radius += d) {
       // step by step, we need to broaden the search radius (we search within a rectangle where x and y are the center)
       // we want to exclude the cells, we searched already in previous steps
@@ -139,20 +138,15 @@ export class PointHash {
           if (!visited.has(key)) {
             contents = this.cells[key]
             if (contents !== undefined)
-              candidates = candidates.concat(contents)
+              candidates = this.removeDoublets(candidates.concat(contents))
             visited.add(key)
           }
         }
       }
       if (radius > max_radius) break // check that here, so we get at least one iteration
     }
-    let best = {} // mapping of square-distances to objects
-    candidates = this.removeDoublets(candidates)
-    for (let i = 0, len = candidates.length; i < len; i++) {
-      best[this.distance(p, candidates[i])] = candidates[i]
-    }
-    let sorted_keys = Object.keys(best).sort((a, b) => parseInt(a) - parseInt(b)) // object-keys are always strings
-    return sorted_keys.map(k => best[k])
+    let sorted_pairs = candidates.map((c, i) => [i, this.distance(p, c)], this).sort((a, b) => a[1] - b[1])
+    return sorted_pairs.map(pair => candidates[pair[0]])
   }
 
   /**
@@ -160,7 +154,7 @@ export class PointHash {
    * Ideal for getting the nearest object near a mouse pointer
    * Returns null if nothing was found
    * @param {Point} p
-   * @param {int} radius
+   * @param {int} [radius]
    * @returns {SpatialHashEntry|null}
    */
   findNearestNeighbour(p, radius = this.cell_size) {
@@ -169,8 +163,20 @@ export class PointHash {
       y: p.y - radius,
       width: radius * 2,
       height: radius * 2
-    })
-    return findNearestNeighbour(p, candidates)
+    }), len = candidates.length
+    if (len === 0) return null
+    if (len === 1) return candidates[0]
+    let square_distance, best_square_dist = Infinity, best
+    for (let i = 0; i < len; i++) {
+      square_distance = this.distance(p, candidates[i])
+      if (square_distance === 0) {
+        return candidates[i]
+      } else if (square_distance < best_square_dist) {
+        best_square_dist = square_distance
+        best = candidates[i]
+      }
+    }
+    return best
   }
 }
 
@@ -203,10 +209,12 @@ export class RectHash extends PointHash {
   }
 
   remove(obj) {
-    this.objects[obj.id].forEach(function (key) {
-      let contents = this.cells[key]
-      this.cells[key] = contents.filter(o => o !== obj)
-      delete this.objects[obj.id]
-    })
+    this.objects[obj.id].forEach((key) => {
+      let contents = this.cells[key].filter(o => o.id !== obj.id)
+      if (contents.length > 0)
+        this.cells[key] = contents
+      else delete this.cells[key]
+    }, this)
+    delete this.objects[obj.id]
   }
 }

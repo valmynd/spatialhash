@@ -158,26 +158,3 @@ export function getEdgesOfRect(rect) {
     [sw, nw]  // left
   ]
 }
-
-/**
- * Calculate which candidate has the shortest distance to a given point
- * @param {Point} p
- * @param {SpatialHashEntry[]} candidates
- * @returns {SpatialHashEntry|null}
- */
-export function findNearestNeighbour(p, candidates) {
-  let best_square_dist = Infinity, best = null, square_distance = null
-  for (let i = 0, len = candidates.length; i < len; i++) {
-    let obj = candidates[i]
-    if (obj.width === undefined || (obj.width <= 1 && obj.height <= 1)) {
-      square_distance = squaredDistanceBetweenPoints(p, obj)
-    } else {
-      square_distance = squaredDistanceBetweenPointAndRectangle(p, obj)
-    }
-    if (square_distance < best_square_dist) {
-      best_square_dist = square_distance
-      best = obj
-    }
-  }
-  return best
-}
