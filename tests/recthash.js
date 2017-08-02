@@ -1,5 +1,5 @@
 import test from "ava";
-import {RectHash} from "../dist/spatialhash";
+import {RectHash} from "../dist/hash2d";
 
 
 test('RectHash.insert works correctly', t => {

@@ -25,7 +25,10 @@
  * @returns {boolean}
  */
 export function rectanglesIntersect(r1, r2) {
-  return (r1.x < r2.x + r2.width && r2.x < r1.x + r1.width && r1.y < r2.y + r2.height)
+  return (r1.x < r2.x + r2.width
+    && r2.x < r1.x + r1.width
+    && r1.y < r2.y + r2.height
+    && r2.y < r1.y + r1.height)
 }
 
 /**
@@ -37,11 +40,10 @@ export function rectanglesIntersect(r1, r2) {
  */
 export function rectangleIsWithinRectangle(within, outside) {
   return (within.x >= outside.x
-  && within.y >= outside.y
-  && within.x + within.width <= outside.x + outside.width
-  && within.y + within.height <= outside.y + outside.height)
+    && within.y >= outside.y
+    && within.x + within.width <= outside.x + outside.width
+    && within.y + within.height <= outside.y + outside.height)
 }
-
 
 /**
  * Check whether a point is within the bounds of a rectangle
@@ -52,9 +54,9 @@ export function rectangleIsWithinRectangle(within, outside) {
  */
 export function pointIsWithinRectangle(p, rect) {
   return (p.x >= rect.x
-  && p.y >= rect.y
-  && p.x <= rect.x + rect.width
-  && p.y <= rect.y + rect.height)
+    && p.y >= rect.y
+    && p.x <= rect.x + rect.width
+    && p.y <= rect.y + rect.height)
 }
 
 /**
@@ -66,17 +68,6 @@ export function pointIsWithinRectangle(p, rect) {
  */
 export function squaredDistanceBetweenPoints(p1, p2) {
   return Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)
-}
-
-/**
- * Calculate the distance between two points
- * Consider using the squared variant of this function!
- * @param {Point} p1
- * @param {Point} p2
- * @returns {number}
- */
-export function distanceBetweenPoints(p1, p2) {
-  return Math.sqrt(squaredDistanceBetweenPoints(p1, p2))
 }
 
 
@@ -92,6 +83,19 @@ export function squaredDistanceBetweenPointAndRectangle(p, rect) {
   let dx = Math.max(rect.x - p.x, 0, p.x - (rect.x + rect.width))
   let dy = Math.max(rect.y - p.y, 0, p.y - (rect.y + rect.height))
   return Math.pow(dx, 2) + Math.pow(dy, 2)
+}
+
+////////////////////////////////////////////////
+
+/**
+ * Calculate the distance between two points
+ * Consider using the squared variant of this function!
+ * @param {Point} p1
+ * @param {Point} p2
+ * @returns {number}
+ */
+export function distanceBetweenPoints(p1, p2) {
+  return Math.sqrt(squaredDistanceBetweenPoints(p1, p2))
 }
 
 /**
@@ -158,3 +162,4 @@ export function getEdgesOfRect(rect) {
     [sw, nw]  // left
   ]
 }
+

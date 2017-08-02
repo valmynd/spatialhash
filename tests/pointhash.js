@@ -1,5 +1,5 @@
 import test from "ava";
-import {PointHash} from "../dist/spatialhash";
+import {PointHash} from "../dist/hash2d";
 
 
 test('PointHash.insert works correctly', t => {

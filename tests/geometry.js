@@ -10,7 +10,7 @@ import {
   distanceBetweenRectangles,
   getCornersOfRect,
   getEdgesOfRect
-} from "../dist/geometry"
+} from "../dist/geometry2d"
 
 test('rectanglesIntersect works correctly', t => {
   t.is(rectanglesIntersect({x: 0, y: 0, width: 100, height: 100}, {x: 0, y: 0, width: 100, height: 100}), true)

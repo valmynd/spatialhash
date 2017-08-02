@@ -4,7 +4,7 @@ import {
   pointIsWithinRectangle,
   squaredDistanceBetweenPoints,
   squaredDistanceBetweenPointAndRectangle
-} from "./geometry";
+} from "./geometry2d";
 
 /**
  * Spatial Hash for Point Objects
