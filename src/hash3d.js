@@ -40,7 +40,7 @@ export class PointHash extends PointHash2D {
     for (bz = z; bz <= z + depth; bz += d) {
       for (by = y; by <= y + height; by += d) {
         for (bx = x; bx <= x + width; bx += d) {
-          let contents = this.cells[this.key(bx, by)]
+          let contents = this.cells[this.key(bx, by, bz)]
           if (contents !== undefined) ret = ret.concat(contents)
         }
       }
@@ -64,15 +64,15 @@ export class PointHash extends PointHash2D {
             }
           }
         }
-        if (radius > max_radius) break // check that here, so we get at least one iteration
       }
+      if (radius > max_radius) break // check that here, so we get at least one iteration
     }
     let sorted_pairs = candidates.map((c, i) => [i, this.distance(p, c)], this).sort((a, b) => a[1] - b[1])
     return sorted_pairs.map(pair => candidates[pair[0]])
   }
 
   findNearestNeighbour(p, radius = this.cell_size) {
-    const {x, y, z = 0} = p
+    const {x, y, z} = p
     let candidates = this.getCollisionCandidates({
       x: x - radius,
       y: y - radius,
@@ -110,7 +110,7 @@ export class RectHash extends PointHash {
   }
 
   insert(obj) {
-    let {id, x, y, z = 0, width, height, depth = 0} = obj
+    let {id, x, y, z, width, height, depth} = obj
     let bx, by, bz, key, d = this.cell_size
     for (bz = z; bz <= z + depth; bz += d) {
       for (by = y; by <= y + height; by += d) {

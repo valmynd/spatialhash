@@ -5,7 +5,7 @@ const pow = Math.pow, sqrt = Math.sqrt, max = Math.max
  * @typedef {Object} Point
  * @property {number} x
  * @property {number} y
- * @property {number} z
+ * @property {number} [z]
  */
 
 /**
@@ -62,6 +62,7 @@ export function boxIsWithinBox(within, outside) {
  * @returns {boolean}
  */
 export function pointIsWithinBox(p, box) {
+  console.log("pointIsWithinBox", p, box)
   return (p.x >= box.x
     && p.y >= box.y
     && p.z >= box.z
