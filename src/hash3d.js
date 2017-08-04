@@ -100,7 +100,7 @@ export class PointHash extends PointHash2D {
 /**
  * Spatial Hash for Axis-Aligned 3D Box Objects (e.g. Bounding Boxes)
  */
-export class RectHash extends PointHash {
+export class BoxHash extends PointHash {
   constructor(cell_size = 6) {
     super(cell_size)
     this.removeDoublets = (array) => Array.from(new Set(array))
