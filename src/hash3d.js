@@ -4,7 +4,7 @@ import {
   boxIsWithinBox,
   pointIsWithinBox,
   squaredDistanceBetweenPoints,
-  squaredDistanceBetweenPointAndRectangle
+  squaredDistanceBetweenPointAndBox
 } from "./geometry3d";
 
 /**
@@ -104,7 +104,7 @@ export class BoxHash extends PointHash {
   constructor(cell_size = 6) {
     super(cell_size)
     this.removeDoublets = (array) => Array.from(new Set(array))
-    this.distance = squaredDistanceBetweenPointAndRectangle
+    this.distance = squaredDistanceBetweenPointAndBox
     this.intersects = boxesIntersect
     this.encloses = boxIsWithinBox
   }

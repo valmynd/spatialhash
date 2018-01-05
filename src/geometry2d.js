@@ -131,24 +131,6 @@ export function distanceBetweenRectangles(a, b) {
 }
 
 /**
- * intuitive way to create a Box object from x, y, width and height
- * (only intended to be used in tests, otherwise maybe cause for some overhead)
- * @param {number} x
- * @param {number} y
- * @param {number} width
- * @param {number} height
- * @returns {Rect}
- */
-export function makeRect(x, y, width, height) {
-  let arr = new Array(4)
-  arr[MIN_X] = x
-  arr[MIN_Y] = y
-  arr[MAX_X] = x + width
-  arr[MAX_Y] = y + height
-  return arr
-}
-
-/**
  * Returns the Center of an axis-aligned rectangle
  * @param {Rect} rect
  * @returns {Point}

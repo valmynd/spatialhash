@@ -1,9 +1,20 @@
 import test from "ava"
 import {
   distanceBetweenPointAndRectangle, distanceBetweenPoints, distanceBetweenRectangles, getCornersOfRect,
-  getEdgesOfRect, makeRect, pointIsWithinRectangle, rectangleIsWithinRectangle, rectanglesIntersect,
+  getEdgesOfRect, MAX_X, MAX_Y, MIN_X, MIN_Y, pointIsWithinRectangle, rectangleIsWithinRectangle, rectanglesIntersect,
   squaredDistanceBetweenPointAndRectangle, squaredDistanceBetweenPoints
 } from "../dist/geometry2d"
+
+
+function makeRect(x, y, width, height) {
+  //if (isNaN(x)) let {x, y, width, height} = x
+  let arr = new Array(4)
+  arr[MIN_X] = x
+  arr[MIN_Y] = y
+  arr[MAX_X] = x + width
+  arr[MAX_Y] = y + height
+  return arr
+}
 
 test('rectanglesIntersect works correctly', t => {
   t.is(rectanglesIntersect(makeRect(0, 0, 100, 100), makeRect(0, 0, 100, 100)), true)
@@ -28,7 +39,6 @@ test('squaredDistanceBetweenPoints works correctly', t => {
 
 test('distanceBetweenPoints works correctly', t => {
   t.is(distanceBetweenPoints([1, 2], [1, 2]), 0)
-  t.is(distanceBetweenPoints([1, 2], [10, 20]), Math.sqrt(405))
 })
 
 test('squaredDistanceBetweenPointAndRectangle works correctly', t => {
