@@ -1,15 +1,12 @@
+const max = Math.max, sqrt = Math.sqrt
+export const X = 0, Y = 1, MIN_X = 0, MIN_Y = 1, MAX_X = 2, MAX_Y = 3
+
 /**
- * @typedef {Object} Point
- * @property {number} x
- * @property {number} y
+ * @typedef {Array} Point
  */
 
 /**
- * @typedef {Object} Rect
- * @property {number} x
- * @property {number} y
- * @property {number} width
- * @property {number} height
+ * @typedef {Array} Rect
  */
 
 /**
@@ -17,32 +14,35 @@
  * @property {*} id
  */
 
-
 /**
  * Check whether two rectangles intersect
- * @param {Rect} r1
- * @param {Rect} r2
+ * @param {Rect} a
+ * @param {Rect} b
  * @returns {boolean}
  */
-export function rectanglesIntersect(r1, r2) {
-  return (r1.x < r2.x + r2.width
-    && r2.x < r1.x + r1.width
-    && r1.y < r2.y + r2.height
-    && r2.y < r1.y + r1.height)
+export function rectanglesIntersect(a, b) {
+  return ( // to intersect, the corners of a need to be simultaneously left, right, above and below b
+    a[MIN_X] < b[MAX_X] &&
+    b[MIN_X] < a[MAX_X] &&
+    a[MIN_Y] < b[MAX_Y] &&
+    b[MIN_Y] < a[MAX_Y]
+  )
 }
 
 /**
  * Check whether a first rectangle is within the bounds of a second rectangle
  * It is assumed, that both rectangles are axis-aligned!
- * @param {Rect} within
+ * @param {Rect} inside
  * @param {Rect} outside
  * @returns {boolean}
  */
-export function rectangleIsWithinRectangle(within, outside) {
-  return (within.x >= outside.x
-    && within.y >= outside.y
-    && within.x + within.width <= outside.x + outside.width
-    && within.y + within.height <= outside.y + outside.height)
+export function rectangleIsWithinRectangle(inside, outside) {
+  return (
+    inside[MIN_X] >= outside[MIN_X] &&
+    inside[MAX_X] <= outside[MAX_X] &&
+    inside[MIN_Y] >= outside[MIN_Y] &&
+    inside[MAX_Y] <= outside[MAX_Y]
+  )
 }
 
 /**
@@ -53,21 +53,26 @@ export function rectangleIsWithinRectangle(within, outside) {
  * @returns {boolean}
  */
 export function pointIsWithinRectangle(p, rect) {
-  return (p.x >= rect.x
-    && p.y >= rect.y
-    && p.x <= rect.x + rect.width
-    && p.y <= rect.y + rect.height)
+  return (
+    p[X] >= rect[MIN_X] &&
+    p[Y] >= rect[MIN_Y] &&
+    p[X] <= rect[MAX_X] &&
+    p[Y] <= rect[MAX_Y]
+  )
 }
 
 /**
  * Calculate the squared distance between two points
  * (to be used when actual distance doesn't matter, because then it's faster)
- * @param {Point} p1
- * @param {Point} p2
+ * @param {Point} a
+ * @param {Point} b
  * @returns {number}
  */
-export function squaredDistanceBetweenPoints(p1, p2) {
-  return Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)
+export function squaredDistanceBetweenPoints(a, b) {
+  return (
+    (a[X] - b[X]) ** 2 +
+    (a[Y] - b[Y]) ** 2
+  )
 }
 
 
@@ -80,9 +85,9 @@ export function squaredDistanceBetweenPoints(p1, p2) {
  */
 export function squaredDistanceBetweenPointAndRectangle(p, rect) {
   // source and explanation: http://stackoverflow.com/a/18157551
-  let dx = Math.max(rect.x - p.x, 0, p.x - (rect.x + rect.width))
-  let dy = Math.max(rect.y - p.y, 0, p.y - (rect.y + rect.height))
-  return Math.pow(dx, 2) + Math.pow(dy, 2)
+  let dx = max(rect[MIN_X] - p[X], 0, p[X] - rect[MAX_X])
+  let dy = max(rect[MIN_Y] - p[Y], 0, p[Y] - rect[MAX_Y])
+  return dx ** 2 + dy ** 2
 }
 
 ////////////////////////////////////////////////
@@ -95,7 +100,7 @@ export function squaredDistanceBetweenPointAndRectangle(p, rect) {
  * @returns {number}
  */
 export function distanceBetweenPoints(p1, p2) {
-  return Math.sqrt(squaredDistanceBetweenPoints(p1, p2))
+  return sqrt(squaredDistanceBetweenPoints(p1, p2))
 }
 
 /**
@@ -106,31 +111,55 @@ export function distanceBetweenPoints(p1, p2) {
  * @returns {number}
  */
 export function distanceBetweenPointAndRectangle(p, rect) {
-  return Math.sqrt(squaredDistanceBetweenPointAndRectangle(p, rect))
+  return sqrt(squaredDistanceBetweenPointAndRectangle(p, rect))
 }
 
 /**
  * Calculate the distance between two rectangles
- * @param {Rect} rect1
- * @param {Rect} rect2
+ * @param {Rect} a
+ * @param {Rect} b
  * @returns {number}
  */
-export function distanceBetweenRectangles(rect1, rect2) {
-  if (rectanglesIntersect(rect1, rect2)) return 0
-  let center1 = {
-    x: rect1.x + rect1.width / 2,
-    y: rect1.y + rect1.height / 2
-  }
-  let center2 = {
-    x: rect2.x + rect2.width / 2,
-    y: rect2.y + rect2.height / 2
-  }
-  let distance_between_centers = distanceBetweenPoints(center1, center2),
-    distance_from_center1_to_rect2 = distanceBetweenPointAndRectangle(center1, rect2),
-    distance_from_center2_to_rect1 = distanceBetweenPointAndRectangle(center2, rect1)
-  let unneeded = distance_between_centers - distance_from_center1_to_rect2 - distance_from_center2_to_rect1
-  return distance_between_centers - unneeded
+export function distanceBetweenRectangles(a, b) {
+  if (rectanglesIntersect(a, b)) return 0
+  let centerA = getCenterOfRect(a), centerB = getCenterOfRect(b),
+    distanceBetweenCenters = distanceBetweenPoints(centerA, centerB),
+    distanceFromCenterAToB = distanceBetweenPointAndRectangle(centerA, b),
+    distanceFromCenterBToA = distanceBetweenPointAndRectangle(centerB, a)
+  let nonDistance = distanceBetweenCenters - distanceFromCenterAToB - distanceFromCenterBToA
+  return distanceBetweenCenters - nonDistance
 }
+
+/**
+ * intuitive way to create a Box object from x, y, width and height
+ * (only intended to be used in tests, otherwise maybe cause for some overhead)
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @returns {Rect}
+ */
+export function makeRect(x, y, width, height) {
+  let arr = new Array(4)
+  arr[MIN_X] = x
+  arr[MIN_Y] = y
+  arr[MAX_X] = x + width
+  arr[MAX_Y] = y + height
+  return arr
+}
+
+/**
+ * Returns the Center of an axis-aligned rectangle
+ * @param {Rect} rect
+ * @returns {Point}
+ */
+export function getCenterOfRect(rect) {
+  return [
+    (rect[MIN_X] + (rect[MIN_X] - rect[MAX_X])) / 2, // x
+    (rect[MIN_Y] + (rect[MIN_Y] - rect[MAX_Y])) / 2 // y
+  ]
+}
+
 
 /**
  * Returns the Corners of an axis-aligned rectangle
@@ -141,10 +170,10 @@ export function distanceBetweenRectangles(rect1, rect2) {
  */
 export function getCornersOfRect(rect) {
   return [
-    {x: rect.x, y: rect.y}, // nw
-    {x: rect.x + rect.width, y: rect.y}, // ne
-    {x: rect.x + rect.width, y: rect.y + rect.height}, // se
-    {x: rect.x, y: rect.y + rect.height} // sw
+    [rect[MIN_X], rect[MIN_Y]], // nw
+    [rect[MAX_X], rect[MIN_Y]], // ne
+    [rect[MAX_X], rect[MAX_Y]], // se
+    [rect[MIN_X], rect[MAX_Y]] // sw
   ]
 }
 

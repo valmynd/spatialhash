@@ -1,21 +1,12 @@
-const pow = Math.pow, sqrt = Math.sqrt, max = Math.max
-
+const sqrt = Math.sqrt, max = Math.max
+export const X = 0, Y = 1, Z = 2, MIN_X = 0, MIN_Y = 1, MIN_Z = 2, MAX_X = 3, MAX_Y = 4, MAX_Z = 5
 
 /**
- * @typedef {Object} Point
- * @property {number} x
- * @property {number} y
- * @property {number} [z]
+ * @typedef {Array} Point
  */
 
 /**
- * @typedef {Object} Box
- * @property {number} x
- * @property {number} y
- * @property {number} z
- * @property {number} width
- * @property {number} height
- * @property {number} depth
+ * @typedef {Array} Box
  */
 
 /**
@@ -25,33 +16,37 @@ const pow = Math.pow, sqrt = Math.sqrt, max = Math.max
 
 /**
  * Check whether two boxes intersect
- * @param {Box} b1
- * @param {Box} b2
+ * @param {Box} a
+ * @param {Box} b
  * @returns {boolean}
  */
-export function boxesIntersect(b1, b2) {
-  return (b1.x < b2.x + b2.width
-    && b2.x < b1.x + b1.width
-    && b1.y < b2.y + b2.height
-    && b2.y < b1.y + b1.height
-    && b1.z < b2.z + b2.depth
-    && b2.z < b1.z + b1.depth)
+export function boxesIntersect(a, b) {
+  return (
+    a[MIN_X] < b[MAX_X] &&
+    b[MIN_X] < a[MAX_X] &&
+    a[MIN_Y] < b[MAX_Y] &&
+    b[MIN_Y] < a[MAX_Y] &&
+    a[MIN_Z] < b[MAX_Z] &&
+    b[MIN_Z] < a[MAX_Z]
+  )
 }
 
 /**
  * Check whether a first box is within the bounds of a second box
  * It is assumed, that both boxes are axis-aligned!
- * @param {Box} within
+ * @param {Box} inside
  * @param {Box} outside
  * @returns {boolean}
  */
-export function boxIsWithinBox(within, outside) {
-  return (within.x >= outside.x
-    && within.y >= outside.y
-    && within.z >= outside.z
-    && within.x + within.width <= outside.x + outside.width
-    && within.y + within.height <= outside.y + outside.height
-    && within.z + within.depth <= outside.z + outside.depth)
+export function boxIsWithinBox(inside, outside) {
+  return (
+    inside[MIN_X] >= outside[MIN_X] &&
+    inside[MAX_X] <= outside[MAX_X] &&
+    inside[MIN_Y] >= outside[MIN_Y] &&
+    inside[MAX_Y] <= outside[MAX_Y] &&
+    inside[MIN_Z] >= outside[MIN_Z] &&
+    inside[MAX_Z] <= outside[MAX_Z]
+  )
 }
 
 /**
@@ -62,24 +57,29 @@ export function boxIsWithinBox(within, outside) {
  * @returns {boolean}
  */
 export function pointIsWithinBox(p, box) {
-  console.log("pointIsWithinBox", p, box)
-  return (p.x >= box.x
-    && p.y >= box.y
-    && p.z >= box.z
-    && p.x <= box.x + box.width
-    && p.y <= box.y + box.height
-    && p.z <= box.z + box.depth)
+  return (
+    p[X] >= box[MIN_X] &&
+    p[Y] >= box[MIN_Y] &&
+    p[Z] >= box[MIN_Z] &&
+    p[X] <= box[MAX_X] &&
+    p[Y] <= box[MAX_Y] &&
+    p[Z] <= box[MAX_Z]
+  )
 }
 
 /**
  * Calculate the squared distance between two points
  * (to be used when actual distance doesn't matter, because then it's faster)
- * @param {Point} p1
- * @param {Point} p2
+ * @param {Point} a
+ * @param {Point} b
  * @returns {number}
  */
-export function squaredDistanceBetweenPoints(p1, p2) {
-  return pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2) + pow(p1.z - p2.z, 2)
+export function squaredDistanceBetweenPoints(a, b) {
+  return (
+    (a[X] - b[X]) ** 2 +
+    (a[Y] - b[Y]) ** 2 +
+    (a[Z] - b[Z]) ** 2
+  )
 }
 
 /**
@@ -89,9 +89,10 @@ export function squaredDistanceBetweenPoints(p1, p2) {
  * @param {Box} box
  * @returns {number}
  */
-export function squaredDistanceBetweenPointAndBox(p, box) {
-  let dx = max(box.x - p.x, 0, p.x - (box.x + box.width))
-  let dy = max(box.y - p.y, 0, p.y - (box.y + box.height))
-  let dz = max(box.z - p.z, 0, p.z - (box.z + box.depth))
-  return pow(dx, 2) + pow(dy, 2) + pow(dz, 2)
+export function squaredDistanceBetweenPointAndRectangle(p, box) {
+  return (
+    max(box[MIN_X] - p[X], 0, p[X] - box[MAX_X]) ** 2 +
+    max(box[MIN_Y] - p[Y], 0, p[Y] - box[MAX_Y]) ** 2 +
+    max(box[MIN_Z] - p[Z], 0, p[Z] - box[MAX_Z]) ** 2
+  )
 }
