@@ -18,11 +18,9 @@ function swap(arr, i, j) {
  */
 export function heap_sort(arr, cmp = (a, b) => a > b) {
   make_heap(arr)
-  let last = arr.length - 1
-  while (last > 0) {
-    swap(arr, 0, last)
-    sift_heap(arr, 0, last, cmp)
-    last -= 1
+  for (let i = arr.length - 1; i > 0; i--) {
+    swap(arr, 0, i)
+    sift_heap(arr, 0, i, cmp)
   }
 }
 
@@ -86,19 +84,32 @@ export function insertion_sort(arr, first = 0, last = arr.length, cmp = (a, b) =
  * @param {function} [cmp]
  */
 export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
-  function sort3(arr, i, j, k, cmp) {
-    if (!cmp(arr[j], arr[i])) {
-      if (!cmp(arr[k], arr[j])) return
-      swap(arr, j, k)
-      if (cmp(arr[j], arr[i])) swap(arr, i, j)
-    } else if (cmp(arr[k], arr[j])) {
-      swap(arr, i, k)
-    } else {
-      swap(arr, i, j)
-      if (cmp(arr[k], arr[j])) swap(arr, j, k)
+  const _sort3 = (arr, x, y, z, cmp) => {
+    let n_swaps = 0
+    if (!cmp(arr[y], arr[x])) {
+      if (!cmp(arr[z], arr[y]))
+        return n_swaps;
+      swap(arr, y, z);
+      n_swaps = 1
+      if (cmp(arr[y], arr[x])) {
+        swap(arr, x, y);
+        n_swaps = 2
+      }
+      return n_swaps;
     }
+    if (cmp(arr[z], arr[y])) {
+      swap(arr, x, z);
+      n_swaps = 1
+      return n_swaps
+    }
+    swap(arr, x, y);
+    n_swaps = 1;
+    if (cmp(arr[z], arr[y])) {
+      swap(arr, y, z);
+      n_swaps = 2
+    }
+    return n_swaps
   }
-
   const limit = 7
   restart:
     while (true) {
@@ -113,7 +124,7 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
           return
         case 3: {
           let m = first
-          sort3(arr, first, ++m, --last, cmp)
+          _sort3(arr, first, ++m, --last, cmp)
           return
         }
       }
@@ -123,7 +134,7 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
       }
       let m = first + len / 2
       let lm1 = last
-      let n_swaps = sort3(arr, first, m, --lm1, cmp)
+      let n_swaps = _sort3(arr, first, m, --lm1, cmp)
       // *m is median
       // partition [first, m) < *m and *m <= [m, last)
       // (this inhibits tossing elements equivalent to m around unnecessarily)
@@ -137,8 +148,8 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
         while (true) {
           if (i === --j) {
             // *first == *m, *m <= all other elements
-            // Parition instead into [first, i) == *first and *first < [i, last)
-            ++i;
+            // partition instead into [first, i) == *first and *first < [i, last)
+            ++i
             j = last
             if (!cmp(arr[first], arr[--j])) {
               while (true) {
@@ -212,34 +223,34 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
       }
       // [first, i) < *i and *i <= [i+1, last)
       if (nth === i) return
-      there:
-        if (n_swaps === 0) {
-          // We were given a perfectly partitioned sequence.  Coincidence?
-          if (nth < i) {
-            // Check for [first, i) already sorted
-            j = m = first
-            while (++j !== i) {
-              if (cmp(arr[j], arr[m]))
-              // not yet sorted, so sort
-                break there
-              m = j
+      if (n_swaps === 0) {
+        // We were given a perfectly partitioned sequence.  Coincidence?
+        if (nth < i) {
+          // Check for [first, i) already sorted
+          j = m = first
+          let need_to_sort = false
+          while (++j !== i) {
+            if (cmp(arr[j], arr[m])) {
+              need_to_sort = true
+              break
             }
-            // [first, i) sorted
-            return
+            m = j
           }
-          else {
-            // Check for [i, last) already sorted
-            j = m = i
-            while (++j !== last) {
-              if (cmp(arr[j], arr[m]))
-              // not yet sorted, so sort
-                break there
-              m = j
+          if (!need_to_sort) return
+        } else {
+          // Check for [i, last) already sorted
+          j = m = i
+          let need_to_sort = false
+          while (++j !== last) {
+            if (cmp(arr[j], arr[m])) {
+              need_to_sort = true
+              break
             }
-            // [i, last) sorted
-            return
+            m = j
           }
+          if (!need_to_sort) return
         }
+      }
       // nth_element on range containing nth
       if (nth < i) {
         // nth_element(first, nth, i, cmp)
@@ -251,3 +262,4 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
       }
     }
 }
+
