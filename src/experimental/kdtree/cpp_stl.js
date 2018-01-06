@@ -1,6 +1,11 @@
 // https://stackoverflow.com/questions/29145520/
 const floor = Math.floor
 
+/**
+ * @param {number[]} arr
+ * @param {int} i
+ * @param {int} j
+ */
 function swap(arr, i, j) {
   let tmp = arr[i]
   arr[i] = arr[j]
@@ -42,7 +47,7 @@ export function make_heap(arr, first = 0, last = arr.length, cmp = (a, b) => a >
  */
 function sift_heap(arr, first, last, cmp) {
   let i = first, j, a, b
-  while (first < last) {
+  while (i < last) {
     j = i
     a = i * 2 + 1
     b = a + 1
@@ -52,130 +57,6 @@ function sift_heap(arr, first, last, cmp) {
     swap(arr, i, j)
     i = j
   }
-}
-
-/**
- * Places the value in the location last-1 into the resulting heap [first, last)
- * bubbleUp
- *   - https://secweb.cs.odu.edu/~zeil/cs361/web/website/Lectures/heap/pages/ar01s04s01.html
- * @param {number[]} arr
- * @param {int} first
- * @param {int} last
- * @param {function} cmp
- * @param {int} [toBeBubbledDown]
- */
-function push_heap(arr, first, last, cmp, toBeBubbledDown = last - 1) {
-  let i = toBeBubbledDown, p = first + (toBeBubbledDown - first - 1) / 2
-  while (i > 0 && cmp(arr[i], arr[i])) {
-    swap(arr, i, p)
-    i = p
-    p = (i - 1) / 2
-  }
-}
-
-/**
- * Swaps the value in location first with the value in the location last-1 and makes [first, last-1) into a heap.
- * What it does (assuming that [begin, end) forms a valid, non-empty heap) is rearrange the elements such that the
- * first element of the heap moves to be the last element of the range, and [begin, end-1) a valid heap.
- * percolateDown
- *   - https://secweb.cs.odu.edu/~zeil/cs361/web/website/Lectures/heap/pages/ar01s04s02.html
- *   - https://secweb.cs.odu.edu/~zeil/cs361/web/website/Lectures/heap/pages/ar01s04s03.html
- * @param {number[]} arr
- * @param {int} first
- * @param {int} last
- * @param {function} cmp
- * @param {int} [toBePercolatedDown]
- */
-export function pop_heap(arr, first, last, cmp, toBePercolatedDown = 0) {
-  if (last <= first) return
-  swap(arr, first, last - 1)
-  /*let i = toBePercolatedDown, len = last - first
-  while (2 * i + 1 < len) {
-    let a = 2 * i + 1 // left child
-    let b = a + 1 // right child
-    let l =  (b < len && cmp(arr[first + b] > arr[first + a])) ? a: b // larger child
-    if (cmp(arr[first + l] , arr[first + i])) {
-      swap(arr, (first + i), (first + l))
-      i = l
-    } else {
-      i = len
-    }
-  }*/
-  make_heap(arr, first, last - 1, cmp)
-}
-
-
-//export function pop_heap(arr, first, last, cmp) {
-//  if (last <= first) return
-//  swap(arr, first, last - 1)
-//  sift_heap(arr, first, last - 1, cmp)
-//}
-
-/**
- *
- * @param {number[]} arr
- * @param {int} t
- * @param {int} a
- * @param {int} b
- * @param {int} c
- * @param {function} cmp
- */
-function move_median_to_first(arr, t, a, b, c, cmp) {
-  if (cmp(a, b)) {
-    if (cmp(b, c)) swap(arr, t, b)
-    else if (cmp(a, c)) swap(arr, t, c)
-    else swap(arr, t, a)
-  } else {
-    if (cmp(a, c)) swap(arr, t, a)
-    else if (cmp(b, c)) swap(arr, t, c)
-    else swap(arr, t, b)
-  }
-}
-
-/**
- * @param {number[]} arr
- * @param {int} first
- * @param {int} last
- * @param {int} pivot
- * @param {function} cmp
- */
-function partition(arr, first, last, pivot, cmp) {
-  while (true) {
-    while (cmp(first, pivot)) ++first
-    --last
-    while (cmp(pivot, last)) --last
-    if (first >= last) return first
-    swap(arr, first, last)
-    first++
-  }
-}
-
-/**
- * @param {number[]} arr
- * @param {int} first
- * @param {int} nth
- * @param {int} last
- * @param {function} [cmp]
- */
-export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
-  console.log({first, nth, last})
-  if (first === last || nth === last) return
-  for (let k = Math.log2(last - first) * 2; last - first > 3; k--) {
-    console.log({k})
-    if (k === 0) {
-      make_heap(arr, first, last, cmp, nth + 1)
-      for (let i = nth + 1; i < last; i++) {
-        if (cmp(i, first)) pop_heap(arr, first, nth + 1, cmp, i)
-      }
-      swap(arr, first, nth)
-      return
-    }
-    move_median_to_first(arr, first, first + 1, first + (last - first) / 2, last - 1, cmp)
-    let cut = partition(arr, first + 1, last, first, cmp)
-    if (cut <= nth) first = cut
-    else last = cut
-  }
-  insertion_sort(arr, first, last, cmp)
 }
 
 /**
@@ -193,4 +74,180 @@ export function insertion_sort(arr, first = 0, last = arr.length, cmp = (a, b) =
     }
     arr[j] = v
   }
+}
+
+/**
+ * ported from LLVM libc++, in libcxx/include/algorithm
+ * libc++ is dual licensed under the MIT and the University of Illinois Open Source Licenses, see LICENSE_LIBCXX
+ * @param {number[]} arr
+ * @param {int} first
+ * @param {int} nth
+ * @param {int} last
+ * @param {function} [cmp]
+ */
+export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
+  function sort3(arr, i, j, k, cmp) {
+    if (!cmp(arr[j], arr[i])) {
+      if (!cmp(arr[k], arr[j])) return
+      swap(arr, j, k)
+      if (cmp(arr[j], arr[i])) swap(arr, i, j)
+    } else if (cmp(arr[k], arr[j])) {
+      swap(arr, i, k)
+    } else {
+      swap(arr, i, j)
+      if (cmp(arr[k], arr[j])) swap(arr, j, k)
+    }
+  }
+
+  const limit = 7
+  restart:
+    while (true) {
+      if (nth === last) return
+      let len = last - first
+      switch (len) {
+        case 0:
+        case 1:
+          return
+        case 2:
+          if (cmp(arr[--last], arr[first])) swap(arr, first, last)
+          return
+        case 3: {
+          let m = first
+          sort3(arr, first, ++m, --last, cmp)
+          return
+        }
+      }
+      if (len <= limit) {
+        insertion_sort(arr, first, last, cmp)
+        return
+      }
+      let m = first + len / 2
+      let lm1 = last
+      let n_swaps = sort3(arr, first, m, --lm1, cmp)
+      // *m is median
+      // partition [first, m) < *m and *m <= [m, last)
+      // (this inhibits tossing elements equivalent to m around unnecessarily)
+      let i = first, j = lm1
+      // j points beyond range to be tested, *lm1 is known to be <= *m
+      // The search going up is known to be guarded but the search coming down isn't.
+      // Prime the downward search with a guard.
+      if (!cmp(arr[i], arr[m])) {
+        // *first == *m, *first doesn't go in first part
+        // manually guard downward moving j against i
+        while (true) {
+          if (i === --j) {
+            // *first == *m, *m <= all other elements
+            // Parition instead into [first, i) == *first and *first < [i, last)
+            ++i;
+            j = last
+            if (!cmp(arr[first], arr[--j])) {
+              while (true) {
+                if (i === j)
+                  return;  // [first, last) all equivalent elements
+                if (cmp(arr[first], arr[i])) {
+                  swap(arr, i, j)
+                  ++n_swaps
+                  ++i
+                  break
+                }
+                ++i
+              }
+            }
+            // [first, i) == *first and *first < [j, last) and j == last - 1
+            if (i === j) {
+              return
+            }
+            while (true) {
+              while (!cmp(arr[first], arr[i])) {
+                ++i
+              }
+              while (cmp(arr[first], arr[--j])) {
+              }
+              if (i >= j) break
+              swap(arr, i, j)
+              ++n_swaps
+              ++i
+            }
+            // [first, i) == *first and *first < [i, last)
+            // The first part is sorted,
+            if (nth < i) return
+            // nth_element the secod part
+            first = i
+            continue restart
+          }
+          if (cmp(arr[j], arr[m])) {
+            swap(arr, i, j)
+            ++n_swaps
+            break;  // found guard for downward moving j, now use unguarded partition
+          }
+        }
+      }
+      ++i
+      // j points beyond range to be tested, *lm1 is known to be <= *m
+      // if not yet partitioned...
+      if (i < j) {
+        // known that *(i - 1) < *m
+        while (true) {
+          // m still guards upward moving i
+          while (cmp(arr[i], arr[m])) {
+            ++i
+          }
+          // It is now known that a guard exists for downward moving j
+          while (!cmp(arr[--j], arr[m])) {
+          }
+          if (i >= j) break
+          swap(arr, i, j)
+          ++n_swaps
+          // It is known that m != j
+          // If m just moved, follow it
+          if (m === i)
+            m = j
+          ++i
+        }
+      }
+      // [first, i) < *m and *m <= [i, last)
+      if (i !== m && cmp(arr[m], arr[i])) {
+        swap(arr, i, m)
+        ++n_swaps
+      }
+      // [first, i) < *i and *i <= [i+1, last)
+      if (nth === i) return
+      there:
+        if (n_swaps === 0) {
+          // We were given a perfectly partitioned sequence.  Coincidence?
+          if (nth < i) {
+            // Check for [first, i) already sorted
+            j = m = first
+            while (++j !== i) {
+              if (cmp(arr[j], arr[m]))
+              // not yet sorted, so sort
+                break there
+              m = j
+            }
+            // [first, i) sorted
+            return
+          }
+          else {
+            // Check for [i, last) already sorted
+            j = m = i
+            while (++j !== last) {
+              if (cmp(arr[j], arr[m]))
+              // not yet sorted, so sort
+                break there
+              m = j
+            }
+            // [i, last) sorted
+            return
+          }
+        }
+      // nth_element on range containing nth
+      if (nth < i) {
+        // nth_element(first, nth, i, cmp)
+        last = i
+      }
+      else {
+        // nth_element(i+1, nth, last, cmp)
+        first = ++i
+      }
+    }
 }

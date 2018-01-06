@@ -15,15 +15,6 @@ test('sort methods', t => {
   t.deepEqual(copy1, copy2)
 })
 
-test('pop_heap', t => {
-  // example from http://en.cppreference.com/w/cpp/algorithm/pop_heap
-  let sample = [3, 1, 4, 1, 5, 9]
-  make_heap(sample)
-  t.deepEqual([9, 5, 4, 1, 1, 3], sample)
-  pop_heap(sample, 0, sample.length, (a, b) => a > b)
-  t.deepEqual([5, 3, 4, 1, 1, 9], sample)
-})
-
 test('nth_element', t => {
   // example from http://en.cppreference.com/w/cpp/algorithm/pop_heap
   let sample = [5, 6, 4, 3, 2, 6, 7, 9, 3]
