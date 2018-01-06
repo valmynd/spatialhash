@@ -88,24 +88,24 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
     let n_swaps = 0
     if (!cmp(arr[y], arr[x])) {
       if (!cmp(arr[z], arr[y]))
-        return n_swaps;
-      swap(arr, y, z);
+        return n_swaps
+      swap(arr, y, z)
       n_swaps = 1
       if (cmp(arr[y], arr[x])) {
-        swap(arr, x, y);
+        swap(arr, x, y)
         n_swaps = 2
       }
-      return n_swaps;
+      return n_swaps
     }
     if (cmp(arr[z], arr[y])) {
-      swap(arr, x, z);
+      swap(arr, x, z)
       n_swaps = 1
       return n_swaps
     }
-    swap(arr, x, y);
-    n_swaps = 1;
+    swap(arr, x, y)
+    n_swaps = 1
     if (cmp(arr[z], arr[y])) {
-      swap(arr, y, z);
+      swap(arr, y, z)
       n_swaps = 2
     }
     return n_swaps
@@ -123,8 +123,7 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
           if (cmp(arr[--last], arr[first])) swap(arr, first, last)
           return
         case 3: {
-          let m = first
-          _sort3(arr, first, ++m, --last, cmp)
+          _sort3(arr, first, first + 1, last - 1, cmp)
           return
         }
       }
@@ -132,7 +131,7 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
         insertion_sort(arr, first, last, cmp)
         return
       }
-      let m = first + len / 2
+      let m = first + floor(len / 2)
       let lm1 = last
       let n_swaps = _sort3(arr, first, m, --lm1, cmp)
       // *m is median

@@ -18,7 +18,9 @@ test('sort methods', t => {
 test('nth_element', t => {
   // example from http://en.cppreference.com/w/cpp/algorithm/pop_heap
   let sample = [5, 6, 4, 3, 2, 6, 7, 9, 3]
-  nth_element(sample, 0, 2, sample.length)
-  console.log({sample})
-  t.deepEqual([2, 3, 3, 4, 6, 6, 7, 9, 5], sample)
+  let m = Math.floor(sample.length/2), l = sample.length
+  nth_element(sample, 0, m, l)
+  console.log("median is ",  sample[m], "sample after calling nth_value: ", sample)
+  for(let i = 0; i < m; i++) t.true(sample[i] < sample[m])
+  //for(let i = m; i < l; i++) t.true(sample[i] >= sample[m])
 })
