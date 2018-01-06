@@ -58,23 +58,6 @@ function sift_heap(arr, first, last, cmp) {
 }
 
 /**
- * @param {number[]} arr
- * @param [first]
- * @param [last]
- * @param {function} cmp
- */
-export function insertion_sort(arr, first = 0, last = arr.length, cmp = (a, b) => a > b) {
-  for (let i = first; i < last; i++) {
-    let j, v = arr[i]
-    for (j = i; j > 0; j--) {
-      if (cmp(v, arr[j - 1])) break
-      arr[j] = arr[j - 1]
-    }
-    arr[j] = v
-  }
-}
-
-/**
  * ported from LLVM libc++, in libcxx/include/algorithm
  * libc++ is dual licensed under the MIT and the University of Illinois Open Source Licenses, see LICENSE_LIBCXX
  * @param {number[]} arr
@@ -83,7 +66,7 @@ export function insertion_sort(arr, first = 0, last = arr.length, cmp = (a, b) =
  * @param {int} last
  * @param {function} [cmp]
  */
-export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
+export function nth_element(arr, first, nth, last, cmp = (a, b) => a < b) {
   const _sort3 = (arr, x, y, z, cmp) => {
     let n_swaps = 0
     if (!cmp(arr[y], arr[x])) {
@@ -110,7 +93,6 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
     }
     return n_swaps
   }
-  const limit = 7
   restart:
     while (true) {
       if (nth === last) return
@@ -126,10 +108,6 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a > b) {
           _sort3(arr, first, first + 1, last - 1, cmp)
           return
         }
-      }
-      if (len <= limit) {
-        insertion_sort(arr, first, last, cmp)
-        return
       }
       let m = first + floor(len / 2)
       let lm1 = last
