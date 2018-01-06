@@ -16,7 +16,7 @@ function swap(arr, i, j) {
  * @param {number[]} arr
  * @param {function} [cmp]
  */
-export function heap_sort(arr, cmp = (a, b) => a > b) {
+export function heap_sort(arr, cmp = (a, b) => a < b) {
   make_heap(arr)
   for (let i = arr.length - 1; i > 0; i--) {
     swap(arr, 0, i)
@@ -31,8 +31,8 @@ export function heap_sort(arr, cmp = (a, b) => a > b) {
  * @param {function} [cmp]
  * @param {int} [s]
  */
-export function make_heap(arr, first = 0, last = arr.length, cmp = (a, b) => a > b, s = floor(arr.length / 2 - 1)) {
-  for (let i = s; i >= first; i--) {
+export function make_heap(arr, first = 0, last = arr.length, cmp = (a, b) => a < b, s = floor(arr.length / 2 - 1)) {
+  for (let i = s; i >= first; i--){
     sift_heap(arr, i, last, cmp)
   }
 }
@@ -49,8 +49,8 @@ function sift_heap(arr, first, last, cmp) {
     j = i
     a = i * 2 + 1
     b = a + 1
-    if (a < last && cmp(arr[a], arr[j])) j = a
-    if (b < last && cmp(arr[b], arr[j])) j = b
+    if (a < last && !cmp(arr[a], arr[j])) j = a
+    if (b < last && !cmp(arr[b], arr[j])) j = b
     if (j === i) return
     swap(arr, i, j)
     i = j

@@ -1,5 +1,5 @@
 import test from "ava"
-import {heap_sort, insertion_sort, make_heap, nth_element, pop_heap} from "../dist/experimental/kdtree/cpp_stl";
+import {heap_sort, nth_element} from "../dist/experimental/kdtree/cpp_stl";
 
 function randomArray(rangeBegin = 0, rangeEnd = 9) {
   let arr = new Array(rangeEnd - rangeBegin)
@@ -20,5 +20,4 @@ test('nth_element', t => {
   console.log("nth_value() result:", sample, "(median=" + sample[m] + ")")
   for (let i = 0; i < m; i++) t.true(sample[i] <= sample[m])
   for (let i = m; i < l; i++) t.true(sample[i] >= sample[m])
-
 })
