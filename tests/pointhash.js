@@ -1,20 +1,15 @@
 import test from "ava";
-import {PointHash as PointHash2D} from "../dist/hash2d";
-import {PointHash as PointHash3D} from "../dist/hash3d";
+import {PointHash2D, PointHash3D} from "../dist/kdhash";
 
 test.skip('PointHash.insert works correctly', t => {
   for (let ph of [new PointHash2D(1), new PointHash3D(1)]) { // cell-size=1
     ph.insert({
       id: 1,
-      x: 1,
-      y: 1,
-      z: 1
+      bb: [1, 1, 1]
     })
     ph.insert({
       id: 2,
-      x: 2,
-      y: 1,
-      z: 1
+      bb: [2, 1, 1]
     })
     t.is(ph.cells[ph.objects[1]][0].x, 1)
     t.is(ph.cells[ph.objects[2]][0].x, 2)
@@ -23,8 +18,8 @@ test.skip('PointHash.insert works correctly', t => {
 
 test.skip('PointHash.remove works correctly', t => {
   const ph = new PointHash2D()
-  ph.insert({id: 1, x: 1, y: 1})
-  ph.remove({id: 1, x: 1, y: 1})
+  ph.insert({id: 1, bb: [1, 1]})
+  ph.remove({id: 1, bb: [1, 1]})
   t.deepEqual(ph.objects, {})
   t.deepEqual(ph.cells, {})
 })
@@ -33,34 +28,26 @@ test.skip('PointHash.update works correctly', t => {
   for (let ph of [new PointHash2D(), new PointHash3D()]) {
     ph.insert({
       id: 1,
-      x: 1,
-      y: 1
+      bb: [1, 1]
     })
     ph.update({
       id: 1,
-      x: 2,
-      y: 2
+      bb: [2, 2]
     })
-    t.is(ph.cells[ph.objects[1]][0].x, 2)
+    t.is(ph.cells[ph.objects[1]][0][0], 2)
   }
 })
 
 test.skip('PointHash.getCollisionCandidates works correctly', t => {
   const first = {
     id: 1,
-    x: 10,
-    y: 10,
-    z: 10
+    bb: [10, 10, 10]
   }, second = {
     id: 2,
-    x: 11,
-    y: 11,
-    z: 11
+    bb: [11, 11, 11]
   }, third = {
     id: 3,
-    x: 100,
-    y: 100,
-    z: 100
+    bb: [100, 100, 100]
   }
   for (let ph of [new PointHash2D(), new PointHash3D()]) {
     ph.insert(first)
@@ -74,19 +61,13 @@ test.skip('PointHash.getCollisionCandidates works correctly', t => {
 test.skip('PointHash.findEnclosedObjects works correctly', t => {
   const first = {
     id: 1,
-    x: 10,
-    y: 10,
-    z: 10
+    bb: [10, 10, 10]
   }, second = {
     id: 2,
-    x: 11,
-    y: 11,
-    z: 11
+    bb: [11, 11, 11]
   }, third = {
     id: 3,
-    x: 100,
-    y: 100,
-    z: 100
+    bb: [100, 100, 100]
   }
   for (let ph of [new PointHash2D(), new PointHash3D()]) {
     ph.insert(first)
@@ -100,19 +81,13 @@ test.skip('PointHash.findEnclosedObjects works correctly', t => {
 test.skip('PointHash.findIntersectingObjects works correctly', t => {
   const first = {
     id: 1,
-    x: 10,
-    y: 10,
-    z: 10
+    bb: [10, 10, 10]
   }, second = {
     id: 2,
-    x: 11,
-    y: 11,
-    z: 11
+    bb: [11, 11, 11]
   }, third = {
     id: 3,
-    x: 100,
-    y: 100,
-    z: 100
+    bb: [100, 100, 100]
   }
   for (let ph of [new PointHash2D(), new PointHash3D()]) {
     ph.insert(first)
@@ -126,19 +101,13 @@ test.skip('PointHash.findIntersectingObjects works correctly', t => {
 test.skip('PointHash.findNearestNeighbour works correctly', t => {
   const first = {
     id: 1,
-    x: 10,
-    y: 10,
-    z: 10
+    bb: [10, 10, 10]
   }, second = {
     id: 2,
-    x: 11,
-    y: 11,
-    z: 11
+    bb: [11, 11, 11]
   }, third = {
     id: 3,
-    x: 100,
-    y: 100,
-    z: 100
+    bb: [100, 100, 100]
   }
   for (let ph of [new PointHash2D(6), new PointHash3D(6)]) {
     ph.insert(first)
@@ -151,19 +120,13 @@ test.skip('PointHash.findNearestNeighbour works correctly', t => {
 test.skip('PointHash.findNearestNeighbours works correctly', t => {
   const first = {
     id: 1,
-    x: 10,
-    y: 10,
-    z: 10
+    bb: [10, 10, 10]
   }, second = {
     id: 2,
-    x: 11,
-    y: 11,
-    z: 11
+    bb: [11, 11, 11]
   }, third = {
     id: 3,
-    x: 100,
-    y: 100,
-    z: 100
+    bb: [100, 100, 100]
   }
   for (let ph of [new PointHash2D(6), new PointHash3D(6)]) {
     ph.insert(first)

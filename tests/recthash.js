@@ -1,5 +1,5 @@
 import test from "ava";
-import {RectHash} from "../dist/hash2d";
+import {RectHash} from "../dist/kdhash";
 
 
 test.skip('RectHash.insert works correctly', t => {

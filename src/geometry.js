@@ -14,12 +14,6 @@ export const X = 0, Y = 1, Z = 2, MIN = 0, MAX = 1
  */
 
 /**
- * @typedef {Object} SpatialHashEntry
- * @property {int} id
- * @property {Box} bb
- */
-
-/**
  * Check whether two boxes intersect
  * @param {Box} a
  * @param {Box} b
@@ -181,13 +175,14 @@ export function distanceBetweenBoxes(a, b, K = a[0].length) {
  * @returns {Point}
  */
 export function getCenterOfBox(box, K = box[0].length) {
+  let min = box[MIN], max = box[MAX]
   if (K === 2) return [
-    (box[MIN][X] + (box[MIN][X] - box[MAX][X])) / 2, // x
-    (box[MIN][Y] + (box[MIN][Y] - box[MAX][Y])) / 2, // y
+    (min[X] + (min[X] - max[X])) / 2, // x
+    (min[Y] + (min[Y] - max[Y])) / 2, // y
   ]
   return [
-    (box[MIN][X] + (box[MIN][X] - box[MAX][X])) / 2, // x
-    (box[MIN][Y] + (box[MIN][Y] - box[MAX][Y])) / 2, // y
-    (box[MIN][Z] + (box[MIN][Z] - box[MAX][Z])) / 2, // z
+    (min[X] + (min[X] - max[X])) / 2, // x
+    (min[Y] + (min[Y] - max[Y])) / 2, // y
+    (min[Z] + (min[Z] - max[Z])) / 2, // z
   ]
 }
