@@ -33,12 +33,33 @@ class KDHash {
    * Each Hash-Key represents a Cell in a Grid. Each Cell may contain multiple Objects.
    * Points will be in exactly one Cell, while Rectangles may span over multiple Cells.
    * @param {Point} p
-   * @protected
+   * @returns {string}
    */
   key(p) {
     // return floor(x / this.cell_size) + "," + floor(y / this.cell_size)
-    let floor = Math.floor, q = this.cellSize
+    const floor = Math.floor, q = this.cellSize
     return p.map(v => floor(v / q)).join(",")
+  }
+
+  /**
+   * Generates Keys for cells that intersect with a given box
+   * @param {Box} box
+   * @returns {string[]}
+   */
+  keys(box) {
+    const [[minX, minY, minZ], [maxX, maxY, maxZ]] = box, d = this.cellSize
+    let bx, by, bz, keys = []
+    if (this.K === 2) {
+      for (by = minY; by <= maxY; by += d)
+        for (bx = minX; bx <= maxX; bx += d)
+          keys.push(this.key([bx, by]))
+    } else { // assert (this.K === 3)
+      for (bz = minZ; bz <= maxZ; bz += d)
+        for (by = minY; by <= maxY; by += d)
+          for (bx = minX; bx <= maxX; bx += d)
+            keys.push(this.key([bx, by, bz]))
+    }
+    return keys
   }
 
   /**
@@ -63,32 +84,11 @@ class KDHash {
       else this.cells[key] = [obj]
       this.objects[obj.id] = key
     } else {
-      if (this.K === 2) { // 2D axis aligned boxes can span multiple cells in 2 dimensions
-        let [[minX, minY], [maxX, maxY]] = obj.bb
-        let key, bx, by, d = this.cellSize, id = obj.id
-        for (bx = minX; bx <= maxX; bx += d) {
-          for (by = minY; by <= maxY; by += d) {
-            key = this.key([bx, by])
-            if (this.cells[key]) this.cells[key].push(obj)
-            else this.cells[key] = [obj]
-            if (this.objects[id]) this.objects[id].push(key)
-            else this.objects[id] = [key]
-          }
-        }
-      } else { // 3D axis aligned boxes can span multiple cells in 3 dimensions (+1 loop)
-        let [[minX, minY, minZ], [maxX, maxY, maxZ]] = obj.bb
-        let key, bx, by, bz, d = this.cellSize, id = obj.id
-        for (bz = minZ; bz <= maxZ; bz += d) {
-          for (by = minY; by <= maxY; by += d) {
-            for (bx = minX; bx <= maxX; bx += d) {
-              key = this.key([bx, by, bz])
-              if (this.cells[key]) this.cells[key].push(obj)
-              else this.cells[key] = [obj]
-              if (this.objects[id]) this.objects[id].push(key)
-              else this.objects[id] = [key]
-            }
-          }
-        }
+      for (let key of this.keys(obj.bb)) {
+        if (this.cells[key]) this.cells[key].push(obj)
+        else this.cells[key] = [obj]
+        if (this.objects[obj.id]) this.objects[obj.id].push(key)
+        else this.objects[obj.id] = [key]
       }
     }
   }
@@ -131,35 +131,13 @@ class KDHash {
    * @returns {Set}
    */
   getCollisionCandidates(box, candidates = new Set(), visited = null) {
-    const [[minX, minY, minZ], [maxX, maxY, maxZ]] = box, d = this.cellSize
-    const check = (visited !== null)
-    let bx, by, bz, key, contents
-    if (this.K === 2) {
-      for (by = minY; by <= maxY; by += d) {
-        for (bx = minX; bx <= maxX; bx += d) {
-          key = this.key([bx, by])
-          if (check) {
-            if (visited.has(key)) continue
-            else visited.add(key)
-          }
-          contents = this.cells[key]
-          if (contents !== undefined) contents.forEach(c => candidates.add(c))
-        }
+    for (let key of this.keys(box)) {
+      if (visited !== null) {
+        if (visited.has(key)) continue
+        else visited.add(key)
       }
-    } else { // assert (this.K === 3)
-      for (bz = minZ; bz <= maxZ; bz += d) {
-        for (by = minY; by <= maxY; by += d) {
-          for (bx = minX; bx <= maxX; bx += d) {
-            key = this.key([bx, by, bz])
-            if (check) {
-              if (visited.has(key)) continue
-              else visited.add(key)
-            }
-            contents = this.cells[key]
-            if (contents !== undefined) contents.forEach(c => candidates.add(c))
-          }
-        }
-      }
+      let contents = this.cells[key]
+      if (contents !== undefined) contents.forEach(c => candidates.add(c))
     }
     return candidates
   }
