@@ -1,19 +1,14 @@
 import test from "ava"
 import {
-  boxesIntersect, boxIsWithinBox, distanceBetweenBoxes, distanceBetweenPointAndBox, distanceBetweenPoints, MAX_X,
-  MAX_Y, MAX_Z, MIN_X, MIN_Y, MIN_Z, pointIsWithinBox, squaredDistanceBetweenPointAndBox, squaredDistanceBetweenPoints
-} from "../dist/geometry3d";
+  boxesIntersect, boxIsWithinBox, distanceBetweenBoxes, distanceBetweenPointAndBox, distanceBetweenPoints,
+  pointIsWithinBox, squaredDistanceBetweenPointAndBox, squaredDistanceBetweenPoints
+} from "../dist/geometry";
 
 function makeBox(x, y, z, width, height, depth) {
-  //if (isNaN(x)) let {x, y, z, width, height, depth} = x
-  let arr = new Array(6)
-  arr[MIN_X] = x
-  arr[MIN_Y] = y
-  arr[MIN_Z] = z
-  arr[MAX_X] = x + width
-  arr[MAX_Y] = y + height
-  arr[MAX_Z] = z + depth
-  return arr
+  return [
+    [x, y, z],
+    [x + width, y + height, z + depth]
+  ]
 }
 
 

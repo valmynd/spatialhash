@@ -1,12 +1,9 @@
-import {MAX_X, MAX_Y, MAX_Z, MIN_X, MIN_Y, MIN_Z, X, Y, Z} from "../../geometry3d";
-
 /**
  * Needed this for generating example Data
  * ported to ES6 from "SurfaceNets in JavaScript" by Mikola Lysenko (License: MIT)
  * based on: S.F. Gibson, "Constrained Elastic Surface Nets". (1998) MERL Tech Report.
  * see https://github.com/mikolalysenko/isosurface/blob/master/lib/surfacenets.js
  */
-
 let cube_edges = new Int32Array(24), edge_table = new Int32Array(256);
 // Initialize the cube_edges table
 // This is just the vertex number of each cube
@@ -44,17 +41,13 @@ for (let i = 0; i < buffer.length; ++i) {
  * @param {Box} bounds
  * @returns {{positions: Array, cells: Array}}
  */
-export function surfaceNets(dims, potential, bounds = [0, 0, 0, ...dims]) {
-  let scale = [
-    (bounds[MAX_X] - bounds[MIN_X]) / dims[X],
-    (bounds[MAX_Y] - bounds[MIN_Y]) / dims[Y],
-    (bounds[MAX_Z] - bounds[MIN_Z]) / dims[Z],
-  ]
-  let shift = [
-    bounds[MIN_X],
-    bounds[MIN_Y],
-    bounds[MIN_Y],
-  ]
+export function surfaceNets(dims, potential, bounds = [[0, 0, 0], dims]) {
+  let scale = [0, 0, 0];
+  let shift = [0, 0, 0];
+  for (let i = 0; i < 3; ++i) {
+    scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i];
+    shift[i] = bounds[0][i];
+  }
   let vertices = [],
     faces = [],
     n = 0,

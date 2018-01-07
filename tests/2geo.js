@@ -1,35 +1,31 @@
 import test from "ava"
 import {
-  distanceBetweenPointAndRectangle, distanceBetweenPoints, distanceBetweenRectangles, getCornersOfRect,
-  getEdgesOfRect, MAX_X, MAX_Y, MIN_X, MIN_Y, pointIsWithinRectangle, rectangleIsWithinRectangle, rectanglesIntersect,
-  squaredDistanceBetweenPointAndRectangle, squaredDistanceBetweenPoints
-} from "../dist/geometry2d"
+  boxesIntersect, boxIsWithinBox, distanceBetweenBoxes, distanceBetweenPointAndBox, distanceBetweenPoints,
+  pointIsWithinBox, squaredDistanceBetweenPointAndBox, squaredDistanceBetweenPoints
+} from "../dist/geometry";
 
 
-function makeRect(x, y, width, height) {
-  //if (isNaN(x)) let {x, y, width, height} = x
-  let arr = new Array(4)
-  arr[MIN_X] = x
-  arr[MIN_Y] = y
-  arr[MAX_X] = x + width
-  arr[MAX_Y] = y + height
-  return arr
+function makeBox(x, y, width, height) {
+  return [
+    [x, y],
+    [x + width, y + height]
+  ]
 }
 
-test('rectanglesIntersect works correctly', t => {
-  t.is(rectanglesIntersect(makeRect(0, 0, 100, 100), makeRect(0, 0, 100, 100)), true)
-  t.is(rectanglesIntersect(makeRect(101, 101, 100, 100), makeRect(0, 0, 100, 100)), false)
+test('boxesIntersect works correctly', t => {
+  t.is(boxesIntersect(makeBox(0, 0, 100, 100), makeBox(0, 0, 100, 100)), true)
+  t.is(boxesIntersect(makeBox(101, 101, 100, 100), makeBox(0, 0, 100, 100)), false)
 })
 
-test('rectangleIsWithinRectangle works correctly', t => {
-  t.is(rectangleIsWithinRectangle(makeRect(0, 0, 100, 100), makeRect(0, 0, 100, 100)), true)
-  t.is(rectangleIsWithinRectangle(makeRect(50, 50, 50, 50), makeRect(0, 0, 100, 100)), true)
-  t.is(rectangleIsWithinRectangle(makeRect(0, 0, 100, 100), makeRect(50, 50, 50, 50)), false)
+test('boxIsWithinBox works correctly', t => {
+  t.is(boxIsWithinBox(makeBox(0, 0, 100, 100), makeBox(0, 0, 100, 100)), true)
+  t.is(boxIsWithinBox(makeBox(50, 50, 50, 50), makeBox(0, 0, 100, 100)), true)
+  t.is(boxIsWithinBox(makeBox(0, 0, 100, 100), makeBox(50, 50, 50, 50)), false)
 })
 
-test('pointIsWithinRectangle works correctly', t => {
-  t.is(pointIsWithinRectangle([10, 10], makeRect(0, 0, 100, 100)), true)
-  t.is(pointIsWithinRectangle([0, 0], makeRect(10, 10, 100, 100)), false)
+test('pointIsWithinBox works correctly', t => {
+  t.is(pointIsWithinBox([10, 10], makeBox(0, 0, 100, 100)), true)
+  t.is(pointIsWithinBox([0, 0], makeBox(10, 10, 100, 100)), false)
 })
 
 test('squaredDistanceBetweenPoints works correctly', t => {
@@ -41,32 +37,14 @@ test('distanceBetweenPoints works correctly', t => {
   t.is(distanceBetweenPoints([1, 2], [1, 2]), 0)
 })
 
-test('squaredDistanceBetweenPointAndRectangle works correctly', t => {
-  t.is(squaredDistanceBetweenPointAndRectangle([1, 2], makeRect(1, 2, 100, 100)), 0)
+test('squaredDistanceBetweenPointAndBox works correctly', t => {
+  t.is(squaredDistanceBetweenPointAndBox([1, 2], makeBox(1, 2, 100, 100)), 0)
 })
 
-test('distanceBetweenPointAndRectangle works correctly', t => {
-  t.is(distanceBetweenPointAndRectangle([1, 2], makeRect(1, 2, 100, 100)), 0)
+test('distanceBetweenPointAndBox works correctly', t => {
+  t.is(distanceBetweenPointAndBox([1, 2], makeBox(1, 2, 100, 100)), 0)
 })
 
-test('distanceBetweenRectangles works correctly', t => {
-  t.is(distanceBetweenRectangles(makeRect(0, 0, 100, 100), makeRect(0, 0, 100, 100)), 0)
-})
-
-test('getCornersOfRect works correctly', t => {
-  t.deepEqual(getCornersOfRect(makeRect(0, 0, 100, 100)), [
-    [0, 0],
-    [100, 0],
-    [100, 100],
-    [0, 100]
-  ])
-})
-
-test('getEdgesOfRect works correctly', t => {
-  t.deepEqual(getEdgesOfRect(makeRect(0, 0, 100, 100)), [
-    [[0, 0], [100, 0]], // top
-    [[100, 0], [100, 100]], // right
-    [[100, 100], [0, 100]], // bottom
-    [[0, 100], [0, 0]]  // left
-  ])
+test('distanceBetweenboxes works correctly', t => {
+  t.is(distanceBetweenBoxes(makeBox(0, 0, 100, 100), makeBox(0, 0, 100, 100)), 0)
 })

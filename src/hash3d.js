@@ -5,7 +5,7 @@ import {
   pointIsWithinBox,
   squaredDistanceBetweenPoints,
   squaredDistanceBetweenPointAndBox
-} from "./geometry3d";
+} from "./geometry";
 
 /**
  * Spatial Hash for 3D Point Objects

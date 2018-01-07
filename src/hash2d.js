@@ -1,10 +1,10 @@
 import {
-  rectanglesIntersect,
-  rectangleIsWithinRectangle,
-  pointIsWithinRectangle,
+  boxesIntersect,
+  boxIsWithinBox,
+  pointIsWithinBox,
   squaredDistanceBetweenPoints,
-  squaredDistanceBetweenPointAndRectangle
-} from "./geometry2d";
+  squaredDistanceBetweenPointAndBox
+} from "./geometry";
 
 /**
  * Spatial Hash for Point Objects
@@ -19,8 +19,8 @@ export class PointHash {
     // Override the following methods, if objects are something else then points!
     this.removeDoublets = (array) => array
     this.distance = squaredDistanceBetweenPoints
-    this.intersects = pointIsWithinRectangle
-    this.encloses = pointIsWithinRectangle
+    this.intersects = pointIsWithinBox
+    this.encloses = pointIsWithinBox
   }
 
   clear() {
@@ -76,7 +76,7 @@ export class PointHash {
 
   /**
    * Retrieve all objects of all cells that intersect with a given rectangle
-   * @param {Rect} rect
+   * @param {Box} rect
    * @returns {SpatialHashEntry[]}
    */
   getCollisionCandidates(rect) {
@@ -94,7 +94,7 @@ export class PointHash {
 
   /**
    * Find Objects, that fit completely within a rectangle
-   * @param {Rect} rect
+   * @param {Box} rect
    * @returns {SpatialHashEntry[]}
    */
   findEnclosedObjects(rect) {
@@ -104,7 +104,7 @@ export class PointHash {
 
   /**
    * Find Objects a rectangle intersects with
-   * @param {Rect} rect
+   * @param {Box} rect
    * @returns {SpatialHashEntry[]}
    */
   findIntersectingObjects(rect) {
@@ -189,9 +189,9 @@ export class RectHash extends PointHash {
   constructor(cell_size = 6) {
     super(cell_size)
     this.removeDoublets = (array) => Array.from(new Set(array))
-    this.distance = squaredDistanceBetweenPointAndRectangle
-    this.intersects = rectanglesIntersect
-    this.encloses = rectangleIsWithinRectangle
+    this.distance = squaredDistanceBetweenPointAndBox
+    this.intersects = boxesIntersect
+    this.encloses = boxIsWithinBox
   }
 
   insert(obj) {
