@@ -1,5 +1,5 @@
 import {
-  boxesIntersect, boxIsWithinBox, distanceBetweenBoxes, squaredDistanceBetweenPointAndBox,
+  boxesIntersect, boxIsWithinBox, squaredDistanceBetweenPointAndBox,
   squaredDistanceBetweenPoints
 } from "./geometry";
 
@@ -41,15 +41,14 @@ class KDHash {
     return p.map(v => floor(v / q)).join(",")
   }
 
-  removeDoublets(arr) {
-    if (this.isPointHash) return arr
-    return Array.from(new Set(arr))
-  }
-
-  distance(a, b) {
-    let K = this.K
-    if (this.isPointHash) return squaredDistanceBetweenPoints(a, b, K)
-    else return distanceBetweenBoxes(b, a, K)
+  /**
+   * @param {Point} p
+   * @param {Box|Point} bb
+   * @returns {number}
+   */
+  distance(p, bb) {
+    if (this.isPointHash) return squaredDistanceBetweenPoints(p, bb, this.K)
+    return squaredDistanceBetweenPointAndBox(p, bb, this.K)
   }
 
   /**
@@ -127,53 +126,62 @@ class KDHash {
   /**
    * Retrieve all objects of all cells that intersect with a given rectangle
    * @param {Box} box
-   * @returns {SpatialHashEntry[]}
+   * @param {Set} [candidates] (this set gets updated)
+   * @param {Set} [visited] (IF provided, holds keys of already visited cells, excludes them from search)
+   * @returns {Set}
    */
-  getCollisionCandidates(box) {
+  getCollisionCandidates(box, candidates = new Set(), visited = null) {
+    const [[minX, minY, minZ], [maxX, maxY, maxZ]] = box, d = this.cellSize
+    const check = (visited !== null)
+    let bx, by, bz, key, contents
     if (this.K === 2) {
-      // strategy: get all cells within the rectangle
-      let [[minX, minY], [maxX, maxY]] = box
-      let ret = [], bx, by, d = this.cellSize
       for (by = minY; by <= maxY; by += d) {
         for (bx = minX; bx <= maxX; bx += d) {
-          let contents = this.cells[this.key([bx, by])]
-          if (contents !== undefined) ret = ret.concat(contents)
+          key = this.key([bx, by])
+          if (check) {
+            if (visited.has(key)) continue
+            else visited.add(key)
+          }
+          contents = this.cells[key]
+          if (contents !== undefined) contents.forEach(c => candidates.add(c))
         }
       }
-      return this.removeDoublets(ret)
     } else { // assert (this.K === 3)
-      let [[minX, minY, minZ], [maxX, maxY, maxZ]] = box
-      let ret = [], bx, by, bz, d = this.cellSize
       for (bz = minZ; bz <= maxZ; bz += d) {
         for (by = minY; by <= maxY; by += d) {
           for (bx = minX; bx <= maxX; bx += d) {
-            let contents = this.cells[this.key([bx, by, bz])]
-            if (contents !== undefined) ret = ret.concat(contents)
+            key = this.key([bx, by, bz])
+            if (check) {
+              if (visited.has(key)) continue
+              else visited.add(key)
+            }
+            contents = this.cells[key]
+            if (contents !== undefined) contents.forEach(c => candidates.add(c))
           }
         }
       }
-      return this.removeDoublets(ret)
     }
+    return candidates
   }
 
   /**
    * Find Objects, that fit completely within a rectangle
-   * @param {Box} rect
+   * @param {Box} box
    * @returns {SpatialHashEntry[]}
    */
-  findEnclosedObjects(rect) {
-    let candidates = this.getCollisionCandidates(rect)
-    return candidates.filter(candidate => boxIsWithinBox(rect, candidate.bb), this)
+  findEnclosedObjects(box) {
+    let candidates = Array.from(this.getCollisionCandidates(box))
+    return candidates.filter(candidate => boxIsWithinBox(candidate.bb, box), this)
   }
 
   /**
    * Find Objects a rectangle intersects with
-   * @param {Box} rect
+   * @param {Box} box
    * @returns {SpatialHashEntry[]}
    */
-  findIntersectingObjects(rect) {
-    let candidates = this.getCollisionCandidates(rect)
-    return candidates.filter(candidate => boxesIntersect(rect, candidate.bb), this)
+  findIntersectingObjects(box) {
+    let candidates = Array.from(this.getCollisionCandidates(box))
+    return candidates.filter(candidate => boxesIntersect(candidate.bb, box), this)
   }
 
   /**
@@ -187,53 +195,22 @@ class KDHash {
    * @returns {SpatialHashEntry[]}
    */
   findNearestNeighbours(p, k = 1, max_radius = this.cellSize) {
-    if (this.K === 2) {
+    const [x, y, z = 0] = p, d = this.cellSize
+    let candidates = new Set(), visited = new Set(), radius, area
+    for (radius = d; candidates.size < k; radius += d) {
       // for getting the points/objects near a mouse pointer, use findNearestNeighbour() instead!
       // ─┼───┼─
       //  │. ¹│²  Something outside the cell could be nearer! (that's why we start with radius=cellSize)
       // ─┼───┼─
-      const [x, y] = p, d = this.cellSize
-      let candidates = [], key, contents, bx, by, radius, visited = new Set()
-      for (radius = d; candidates.length < k; radius += d) {
-        // step by step, we need to broaden the search radius (we search within a rectangle where x and y are the center)
-        // we want to exclude the cells, we searched already in previous steps
-        for (by = y - radius; by <= y + radius; by += d) {
-          for (bx = x - radius; bx <= x + radius; bx += d) {
-            key = this.key([bx, by])
-            if (!visited.has(key)) {
-              contents = this.cells[key]
-              if (contents !== undefined)
-                candidates = this.removeDoublets(candidates.concat(contents))
-              visited.add(key)
-            }
-          }
-        }
-        if (radius > max_radius) break // check that here, so we get at least one iteration
-      }
-      let sorted_pairs = candidates.map((c, i) => [i, this.distance(p, c)], this).sort((a, b) => a[1] - b[1])
-      return sorted_pairs.map(pair => candidates[pair[0]])
-    } else { // assert (this.K === 3)
-      const [x, y, z] = p, d = this.cellSize
-      let candidates = [], key, contents, bx, by, bz, radius, visited = new Set()
-      for (radius = d; candidates.length < k; radius += d) {
-        for (bz = z - radius; bz <= z + radius; bz += d) {
-          for (by = y - radius; by <= y + radius; by += d) {
-            for (bx = x - radius; bx <= x + radius; bx += d) {
-              key = this.key([bx, by, bz])
-              if (!visited.has(key)) {
-                contents = this.cells[key]
-                if (contents !== undefined)
-                  candidates = this.removeDoublets(candidates.concat(contents))
-                visited.add(key)
-              }
-            }
-          }
-        }
-        if (radius > max_radius) break // check that here, so we get at least one iteration
-      }
-      let sorted_pairs = candidates.map((c, i) => [i, this.distance(p, c)], this).sort((a, b) => a[1] - b[1])
-      return sorted_pairs.map(pair => candidates[pair[0]])
+      // step by step, we need to broaden the search radius (we search within a box where x and y are the center)
+      // we want to exclude the cells, we searched already in previous steps
+      area = [[x - radius, y - radius, z - radius], [x + radius, y + radius, z + radius]]
+      this.getCollisionCandidates(area, candidates, visited) // updates the candidates and visited sets
+      if (radius > max_radius) break // check that here, so we get at least one iteration
     }
+    let arr = Array.from(candidates) // turn into array so it's values are accessible via array index
+    let pairs = arr.map((c, i) => [i, this.distance(p, c.bb)], this).sort((a, b) => a[1] - b[1])
+    return pairs.map(pair => arr[pair[0]])
   }
 
   /**
@@ -245,25 +222,17 @@ class KDHash {
    * @returns {SpatialHashEntry|null}
    */
   findNearestNeighbour(p, radius = this.cellSize) {
-    let radiusBox = (this.K === 3) ? [
-      [p[0] - radius, p[1] - radius, p[2] - radius],
-      [p[0] + radius, p[1] + radius, p[2] + radius]
-    ] : [
-      [p[0] - radius, p[1] - radius],
-      [p[0] + radius, p[1] + radius]
-    ]
-    let candidates = this.getCollisionCandidates(radiusBox)
+    const [x, y, z = 0] = p, area = [[x - radius, y - radius, z - radius], [x + radius, y + radius, z + radius]]
+    let candidates = Array.from(this.getCollisionCandidates(area))
     let len = candidates.length
     if (len === 0) return null
     if (len === 1) return candidates[0]
-    let square_distance, best_square_dist = Infinity, best = null
+    let distance, bestDistanceYet = Infinity, best = null
     for (let i = 0; i < len; i++) {
-      if (this.isPointHash) square_distance = squaredDistanceBetweenPoints(p, candidates[i].bb, this.K)
-      else square_distance = squaredDistanceBetweenPointAndBox(p, candidates[i].bb, this.K)
-      if (square_distance === 0) {
-        return candidates[i]
-      } else if (square_distance < best_square_dist) {
-        best_square_dist = square_distance
+      distance = this.distance(p, candidates[i].bb)
+      if (distance === 0) return candidates[i]
+      if (distance < bestDistanceYet) {
+        bestDistanceYet = distance
         best = candidates[i]
       }
     }
@@ -271,25 +240,25 @@ class KDHash {
   }
 }
 
-export class BoxHash2D extends KDHash{
+export class BoxHash2D extends KDHash {
   constructor(cell_size = 6) {
     super(2, cell_size, false)
   }
 }
 
-export class BoxHash3D extends KDHash{
+export class BoxHash3D extends KDHash {
   constructor(cell_size = 6) {
     super(3, cell_size, false)
   }
 }
 
-export class PointHash2D extends KDHash{
+export class PointHash2D extends KDHash {
   constructor(cell_size = 6) {
     super(2, cell_size, true)
   }
 }
 
-export class PointHash3D extends KDHash{
+export class PointHash3D extends KDHash {
   constructor(cell_size = 6) {
     super(3, cell_size, true)
   }

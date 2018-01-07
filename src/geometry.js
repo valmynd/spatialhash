@@ -175,14 +175,14 @@ export function distanceBetweenBoxes(a, b, K = a[0].length) {
  * @returns {Point}
  */
 export function getCenterOfBox(box, K = box[0].length) {
-  let min = box[MIN], max = box[MAX]
+  let [[minX, minY, minZ], [maxX, maxY, maxZ]] = box
   if (K === 2) return [
-    (min[X] + (min[X] - max[X])) / 2, // x
-    (min[Y] + (min[Y] - max[Y])) / 2, // y
+    (minX + (minX - maxX)) / 2,
+    (minY + (minY - maxY)) / 2,
   ]
   return [
-    (min[X] + (min[X] - max[X])) / 2, // x
-    (min[Y] + (min[Y] - max[Y])) / 2, // y
-    (min[Z] + (min[Z] - max[Z])) / 2, // z
+    (minX + (minX - maxX)) / 2,
+    (minY + (minY - maxY)) / 2,
+    (minZ + (minZ - maxZ)) / 2
   ]
 }
