@@ -52,7 +52,7 @@ export function boxesIntersect(a, b, K = a[0].length) {
  * @returns {boolean}
  */
 export function boxIsWithinBox(inside, outside, K = inside[0].length) {
-  if (inside.length === 2) return (
+  if (K === 2) return (
     inside[MIN][X] >= outside[MIN][X] &&
     inside[MAX][X] <= outside[MAX][X] &&
     inside[MIN][Y] >= outside[MIN][Y] &&
