@@ -97,11 +97,14 @@ export class KDTree {
         let nV = node.point[axis] // cutting value of the current node
         let bb = [...task.bb] // operate on copy
         if (qV < nV) { // in this case the query-point is on the left side of the cut
-          // TODO: change relevant axis values in bb!
+          //let [x,y,z] = bb[0]// TODO: change relevant axis values in bb!
+          bb[0][axis] = nV
+          bb[1][axis] = nV
           stack.push({id: node.right, bb: bb})
           node = nodes[node.left] // descend to the node with lower v (that will always be the left one)
         } else { // analogous to above: descend to the node with higher v, enqueue the other
-          // TODO: change relevant axis values in bb!
+          bb[0][axis] = nV // TODO: change relevant axis values in bb!
+          bb[1][axis] = nV
           stack.push({id: node.left, bb: bb})
           node = nodes[node.right]
         }

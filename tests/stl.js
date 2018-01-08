@@ -17,7 +17,7 @@ test('nth_element', t => {
   let sample = randomArray()//[5, 6, 4, 3, 2, 6, 7, 9, 3]
   let m = Math.floor(sample.length / 2), l = sample.length
   nth_element(sample, 0, m, l)
-  console.log("nth_value() result:", sample, "(median=" + sample[m] + ")")
+  //console.log("nth_value() result:", sample, "(median=" + sample[m] + ")")
   for (let i = 0; i < m; i++) t.true(sample[i] <= sample[m])
   for (let i = m; i < l; i++) t.true(sample[i] >= sample[m])
 })

@@ -1,5 +1,5 @@
 import {
-  boxesIntersect, boxIsWithinBox, squaredDistanceBetweenPointAndBox,
+  boxesIntersect, boxIsWithinBox, pointIsWithinBox, squaredDistanceBetweenPointAndBox,
   squaredDistanceBetweenPoints
 } from "./geometry";
 
@@ -11,12 +11,11 @@ import {
 
 /**
  * Spatial Hash for K-Dimensional Points -OR- K-Dimensional axis-aligned Boxes
- * Implementation is based on this very good tutorial:
- *    http://www.gamedev.net/page/resources/_/technical/game-programming/spatial-hashing-r2697
+ * based on this great Tutorial: https://www.gamedev.net/articles/programming/-r2697/
+ * @abstract
  */
 class KDHash {
   constructor(K = 3, cell_size = 6, stores_points = false) {
-    this.objects = {} // maps object-ids to hash-keys (needed for removing objects)
     this.cells = {} // maps hash-keys to arrays of objects
     this.cellSize = cell_size // size of each cell in coordinate-space
     this.isPointHash = stores_points // choice of geometry methods etc.
@@ -25,7 +24,6 @@ class KDHash {
 
   clear() {
     this.cells = {}
-    this.objects = {}
   }
 
   /**
@@ -36,9 +34,11 @@ class KDHash {
    * @returns {string}
    */
   key(p) {
-    // return floor(x / this.cell_size) + "," + floor(y / this.cell_size)
-    const floor = Math.floor, q = this.cellSize
-    return p.map(v => floor(v / q)).join(",")
+    // return floor(x / this.cell_size) + "," + floor(y / this.cell_size) // return p.map(v => floor(v / d)).join(",")
+    //if(p.length > this.K) throw "Invalid dimensionality: " + p.length + " expected " + this.K
+    const [x, y, z = 0] = p, floor = Math.floor, d = this.cellSize, sep = ","
+    if (this.K === 2) return floor(x / d) + sep + floor(y / d)
+    return floor(x / d) + sep + floor(y / d) + sep + floor(z / d)
   }
 
   /**
@@ -78,18 +78,9 @@ class KDHash {
    * @param {SpatialHashEntry} obj
    */
   insert(obj) {
-    if (this.isPointHash) { // points can't span multiple cells
-      let key = this.key(obj.bb)
+    for (let key of ((this.isPointHash) ? [this.key(obj.bb)] : this.keys(obj.bb))) {
       if (this.cells[key]) this.cells[key].push(obj)
       else this.cells[key] = [obj]
-      this.objects[obj.id] = key
-    } else {
-      for (let key of this.keys(obj.bb)) {
-        if (this.cells[key]) this.cells[key].push(obj)
-        else this.cells[key] = [obj]
-        if (this.objects[obj.id]) this.objects[obj.id].push(key)
-        else this.objects[obj.id] = [key]
-      }
     }
   }
 
@@ -98,19 +89,10 @@ class KDHash {
    * @param {SpatialHashEntry} obj
    */
   remove(obj) {
-    if (this.isPointHash) {
-      let key = this.objects[obj.id]
+    for (let key of ((this.isPointHash) ? [this.key(obj.bb)] : this.keys(obj.bb))) {
       let contents = this.cells[key].filter(o => o.id !== obj.id)
-      if (contents.length > 0) this.cells[key] = contents
+      if (contents.length) this.cells[key] = contents
       else delete this.cells[key]
-      delete this.objects[obj.id]
-    } else {
-      this.objects[obj.id].forEach((key) => {
-        let contents = this.cells[key].filter(o => o.id !== obj.id)
-        if (contents.length > 0) this.cells[key] = contents
-        else delete this.cells[key]
-      }, this)
-      delete this.objects[obj.id]
     }
   }
 
@@ -149,7 +131,8 @@ class KDHash {
    */
   findEnclosedObjects(box) {
     let candidates = Array.from(this.getCollisionCandidates(box))
-    return candidates.filter(candidate => boxIsWithinBox(candidate.bb, box), this)
+    if (this.isPointHash) return candidates.filter(candidate => pointIsWithinBox(candidate.bb, box))
+    return candidates.filter(candidate => boxIsWithinBox(candidate.bb, box))
   }
 
   /**
@@ -159,7 +142,8 @@ class KDHash {
    */
   findIntersectingObjects(box) {
     let candidates = Array.from(this.getCollisionCandidates(box))
-    return candidates.filter(candidate => boxesIntersect(candidate.bb, box), this)
+    if (this.isPointHash) return candidates.filter(candidate => pointIsWithinBox(candidate.bb, box))
+    return candidates.filter(candidate => boxesIntersect(candidate.bb, box))
   }
 
   /**

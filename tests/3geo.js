@@ -11,40 +11,39 @@ function makeBox(x, y, z, width, height, depth) {
   ]
 }
 
-
-test('boxesIntersect works correctly', t => {
+test('boxesIntersect()', t => {
   t.is(boxesIntersect(makeBox(0, 0, 0, 100, 100, 100), makeBox(0, 0, 0, 100, 100, 100)), true)
   t.is(boxesIntersect(makeBox(101, 101, 101, 100, 100, 100), makeBox(0, 0, 0, 100, 100, 100)), false)
 })
 
-test('boxIsWithinBox works correctly', t => {
+test('boxIsWithinBox()', t => {
   t.is(boxIsWithinBox(makeBox(0, 0, 0, 100, 100, 100), makeBox(0, 0, 0, 100, 100, 100)), true)
   t.is(boxIsWithinBox(makeBox(50, 50, 50, 50, 50, 50), makeBox(0, 0, 0, 100, 100, 100)), true)
   t.is(boxIsWithinBox(makeBox(0, 0, 0, 100, 100, 100), makeBox(50, 50, 50, 50, 50, 50)), false)
 })
 
-test('pointIsWithinBox works correctly', t => {
+test('pointIsWithinBox()', t => {
   t.is(pointIsWithinBox([10, 10, 10], makeBox(0, 0, 0, 100, 100, 100)), true)
   t.is(pointIsWithinBox([0, 0, 0], makeBox(10, 10, 100, 100)), false)
 })
 
-test('squaredDistanceBetweenPoints works correctly', t => {
+test('squaredDistanceBetweenPoints()', t => {
   t.is(squaredDistanceBetweenPoints([1, 2, 3], [1, 2, 3]), 0)
   t.is(squaredDistanceBetweenPoints([1, 2, 3], [10, 20, 30]), 1134)
 })
 
-test('distanceBetweenPoints works correctly', t => {
+test('distanceBetweenPoints()', t => {
   t.is(distanceBetweenPoints([1, 2, 3], [1, 2, 3]), 0)
 })
 
-test('squaredDistanceBetweenPointAndRectangle works correctly', t => {
+test('squaredDistanceBetweenPointAndRectangle()', t => {
   t.is(squaredDistanceBetweenPointAndBox([1, 2, 3], makeBox(1, 2, 3, 100, 100, 100)), 0)
 })
 
-test('distanceBetweenPointAndRectangle works correctly', t => {
+test('distanceBetweenPointAndRectangle()', t => {
   t.is(distanceBetweenPointAndBox([1, 2, 3], makeBox(1, 2, 3, 100, 100, 100)), 0)
 })
 
-test('distanceBetweenRectangles works correctly', t => {
+test('distanceBetweenRectangles()', t => {
   t.is(distanceBetweenBoxes(makeBox(0, 0, 0, 100, 100, 100), makeBox(0, 0, 0, 100, 100, 100)), 0)
 })

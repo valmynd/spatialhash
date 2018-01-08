@@ -9,30 +9,7 @@ function makeBox({x, y, z, width, height, depth}) {
   return [[x, y, z], [x + width, y + height, z + depth]]
 }
 
-test('BoxHash.insert works correctly', t => {
-  const rh = new BoxHash3D(1) // cell-size=1
-  rh.insert(makeEntry({id: 1, x: 1, y: 1, z: 1, width: 1, height: 1, depth: 1}))
-  rh.insert(makeEntry({id: 2, x: 10, y: 10, z: 10, width: 1, height: 1, depth: 1}))
-  t.is(rh.cells[rh.objects[1][0]][0].id, 1)
-  t.is(rh.cells[rh.objects[2][0]][0].id, 2)
-})
-
-test('BoxHash3D.remove works correctly', t => {
-  const rh = new BoxHash3D()
-  rh.insert(makeEntry({id: 1, x: 1, y: 1, z: 1, width: 100, height: 100, depth: 100}))
-  rh.remove(makeEntry({id: 1, x: 1, y: 1, z: 1, width: 100, height: 100, depth: 100}))
-  t.deepEqual(rh.objects, {})
-  t.deepEqual(rh.cells, {})
-})
-
-test('BoxHash3D.update works correctly', t => {
-  const rh = new BoxHash3D()
-  rh.insert(makeEntry({id: 1, x: 1, y: 1, z: 1, width: 100, height: 100, depth: 100}))
-  rh.update(makeEntry({id: 1, x: 2, y: 1, z: 1, width: 100, height: 200, depth: 100}))
-  t.is(rh.cells[rh.objects[1][0]][0].bb[0][0], 2)
-})
-
-test('BoxHash3D.getCollisionCandidates works correctly', t => {
+test('BoxHash3D.getCollisionCandidates()', t => {
   const rh = new BoxHash3D()
   const first = makeEntry({id: 2, x: 0, y: 0, z: 0, width: 100, height: 100, depth: 100})
   const second = makeEntry({id: 1, x: 10, y: 10, z: 10, width: 1, height: 1, depth: 1})
@@ -44,7 +21,7 @@ test('BoxHash3D.getCollisionCandidates works correctly', t => {
     rh.getCollisionCandidates(makeBox({x: 10, y: 10, z: 10, width: 1, height: 1, depth: 10})))
 })
 
-test('BoxHash3D.findEnclosedObjects works correctly', t => {
+test('BoxHash3D.findEnclosedObjects()', t => {
   const rh = new BoxHash3D()
   const first = makeEntry({id: 2, x: 0, y: 0, z: 0, width: 100, height: 100, depth: 100})
   const second = makeEntry({id: 1, x: 10, y: 10, z: 10, width: 1, height: 1, depth: 1})
@@ -56,7 +33,7 @@ test('BoxHash3D.findEnclosedObjects works correctly', t => {
     rh.findEnclosedObjects(makeBox({x: -1, y: -1, z: -1, width: 150, height: 150, depth: 150})))
 })
 
-test('BoxHash3D.findIntersectingObjects works correctly', t => {
+test('BoxHash3D.findIntersectingObjects()', t => {
   const rh = new BoxHash3D()
   const first = makeEntry({id: 2, x: 0, y: 0, z: 0, width: 100, height: 100, depth: 100})
   const second = makeEntry({id: 1, x: 10, y: 10, z: 10, width: 1, height: 1, depth: 1})
@@ -68,7 +45,7 @@ test('BoxHash3D.findIntersectingObjects works correctly', t => {
     makeBox({x: -1, y: -1, z: -1, width: 150, height: 150, depth: 150})))
 })
 
-test('BoxHash3D.findNearestNeighbour works correctly', t => {
+test('BoxHash3D.findNearestNeighbour()', t => {
   const rh = new BoxHash3D(6)
   const first = makeEntry({id: 2, x: 0, y: 0, z: 0, width: 100, height: 100, depth: 100})
   const second = makeEntry({id: 1, x: 10, y: 10, z: 10, width: 1, height: 1, depth: 1})
@@ -77,7 +54,7 @@ test('BoxHash3D.findNearestNeighbour works correctly', t => {
   t.is(rh.findNearestNeighbour([9, 9, 9]), first)
 })
 
-test('BoxHash3D.findNearestNeighbours works correctly', t => {
+test('BoxHash3D.findNearestNeighbours()', t => {
   const rh = new BoxHash3D(20) // cell-sizes may have a huge performance-impact, here
   const first = makeEntry({id: 1, x: 1, y: 1, z: 1, width: 100, height: 100, depth: 100})
   const second = makeEntry({id: 2, x: 11, y: 11, z: 11, width: 1, height: 1, depth: 1})
