@@ -21,20 +21,8 @@ export const X = 0, Y = 1, Z = 2, MIN = 0, MAX = 1
  * @returns {boolean}
  */
 export function boxesIntersect(a, b, K = a[0].length) {
-  if (K === 2) return (
-    a[MIN][X] < b[MAX][X] &&
-    b[MIN][X] < a[MAX][X] &&
-    a[MIN][Y] < b[MAX][Y] &&
-    b[MIN][Y] < a[MAX][Y]
-  )
-  return (
-    a[MIN][X] < b[MAX][X] &&
-    b[MIN][X] < a[MAX][X] &&
-    a[MIN][Y] < b[MAX][Y] &&
-    b[MIN][Y] < a[MAX][Y] &&
-    a[MIN][Z] < b[MAX][Z] &&
-    b[MIN][Z] < a[MAX][Z]
-  )
+  for (let axis = 0; axis < K; axis++) if (a[0][axis] > b[1][axis] || b[0][axis] > a[1][axis]) return false
+  return true
 }
 
 /**
@@ -46,20 +34,8 @@ export function boxesIntersect(a, b, K = a[0].length) {
  * @returns {boolean}
  */
 export function boxIsWithinBox(inside, outside, K = inside[0].length) {
-  if (K === 2) return (
-    inside[MIN][X] >= outside[MIN][X] &&
-    inside[MAX][X] <= outside[MAX][X] &&
-    inside[MIN][Y] >= outside[MIN][Y] &&
-    inside[MAX][Y] <= outside[MAX][Y]
-  )
-  return (
-    inside[MIN][X] >= outside[MIN][X] &&
-    inside[MAX][X] <= outside[MAX][X] &&
-    inside[MIN][Y] >= outside[MIN][Y] &&
-    inside[MAX][Y] <= outside[MAX][Y] &&
-    inside[MIN][Z] >= outside[MIN][Z] &&
-    inside[MAX][Z] <= outside[MAX][Z]
-  )
+  for (let i = 0; i < K; i++) if (inside[0][i] < outside[0][i] || inside[1][i] > outside[1][i]) return false
+  return true
 }
 
 /**
@@ -71,20 +47,8 @@ export function boxIsWithinBox(inside, outside, K = inside[0].length) {
  * @returns {boolean}
  */
 export function pointIsWithinBox(p, box, K = p.length) {
-  if (K === 2) return (
-    p[X] >= box[MIN][X] &&
-    p[Y] >= box[MIN][Y] &&
-    p[X] <= box[MAX][X] &&
-    p[Y] <= box[MAX][Y]
-  )
-  return (
-    p[X] >= box[MIN][X] &&
-    p[Y] >= box[MIN][Y] &&
-    p[Z] >= box[MIN][Z] &&
-    p[X] <= box[MAX][X] &&
-    p[Y] <= box[MAX][Y] &&
-    p[Z] <= box[MAX][Z]
-  )
+  for (let i = 0; i < K; i++) if (p[i] < box[0][i] || p[i] > box[1][i]) return false
+  return true
 }
 
 /**
@@ -96,15 +60,9 @@ export function pointIsWithinBox(p, box, K = p.length) {
  * @returns {number}
  */
 export function squaredDistanceBetweenPoints(a, b, K = a.length) {
-  if (K === 2) return (
-    (a[X] - b[X]) ** 2 +
-    (a[Y] - b[Y]) ** 2
-  )
-  return (
-    (a[X] - b[X]) ** 2 +
-    (a[Y] - b[Y]) ** 2 +
-    (a[Z] - b[Z]) ** 2
-  )
+  let d = 0
+  for (let i = 0; i < K; i++) d += ((a[i] - b[i]) ** 2)
+  return d
 }
 
 /**
@@ -116,15 +74,9 @@ export function squaredDistanceBetweenPoints(a, b, K = a.length) {
  * @returns {number}
  */
 export function squaredDistanceBetweenPointAndBox(p, box, K = p.length) {
-  if (K === 2) return (
-    max(box[MIN][X] - p[X], 0, p[X] - box[MAX][X]) ** 2 +
-    max(box[MIN][Y] - p[Y], 0, p[Y] - box[MAX][Y]) ** 2
-  )
-  return (
-    max(box[MIN][X] - p[X], 0, p[X] - box[MAX][X]) ** 2 +
-    max(box[MIN][Y] - p[Y], 0, p[Y] - box[MAX][Y]) ** 2 +
-    max(box[MIN][Z] - p[Z], 0, p[Z] - box[MAX][Z]) ** 2
-  )
+  let d = 0
+  for (let i = 0; i < K; i++) d += (max(box[0][i] - p[i], 0, p[i] - box[1][i]) ** 2)
+  return d
 }
 
 /**
@@ -175,14 +127,7 @@ export function distanceBetweenBoxes(a, b, K = a[0].length) {
  * @returns {Point}
  */
 export function getCenterOfBox(box, K = box[0].length) {
-  let [[minX, minY, minZ], [maxX, maxY, maxZ]] = box
-  if (K === 2) return [
-    (minX + (minX - maxX)) / 2,
-    (minY + (minY - maxY)) / 2,
-  ]
-  return [
-    (minX + (minX - maxX)) / 2,
-    (minY + (minY - maxY)) / 2,
-    (minZ + (minZ - maxZ)) / 2
-  ]
+  let p = new Array(K)
+  for (let i = 0; i < K; i++) p[i] = (box[0][i] + (box[0][i] - box[1][i])) / 2
+  return p
 }
