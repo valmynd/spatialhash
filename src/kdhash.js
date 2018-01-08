@@ -11,7 +11,7 @@ import {
 
 /**
  * Spatial Hash for K-Dimensional Points -OR- K-Dimensional axis-aligned Boxes
- * based on this great Tutorial: https://www.gamedev.net/articles/programming/-r2697/
+ * inspired by this great Tutorial: https://www.gamedev.net/articles/programming/-r2697/
  * @abstract
  */
 class KDHash {
@@ -34,11 +34,10 @@ class KDHash {
    * @returns {string}
    */
   key(p) {
-    // return floor(x / this.cell_size) + "," + floor(y / this.cell_size) // return p.map(v => floor(v / d)).join(",")
     //if(p.length > this.K) throw "Invalid dimensionality: " + p.length + " expected " + this.K
-    const [x, y, z = 0] = p, floor = Math.floor, d = this.cellSize, sep = ","
-    if (this.K === 2) return floor(x / d) + sep + floor(y / d)
-    return floor(x / d) + sep + floor(y / d) + sep + floor(z / d)
+    //if(this.K === 2)return floor(x / d) + sep + floor(y / d)//floor(x / d) + sep + floor(y / d) + sep + floor(z / d)
+    const floor = Math.floor, d = this.cellSize
+    return p.map(v => floor(v / d)).join(",")
   }
 
   /**
@@ -53,11 +52,13 @@ class KDHash {
       for (by = minY; by <= maxY; by += d)
         for (bx = minX; bx <= maxX; bx += d)
           keys.push(this.key([bx, by]))
-    } else { // assert (this.K === 3)
+    } else if ((this.K === 3)) {
       for (bz = minZ; bz <= maxZ; bz += d)
         for (by = minY; by <= maxY; by += d)
           for (bx = minX; bx <= maxX; bx += d)
             keys.push(this.key([bx, by, bz]))
+    } else {
+      throw "Override keys() for dimensions > 3"
     }
     return keys
   }
@@ -130,9 +131,9 @@ class KDHash {
    * @returns {SpatialHashEntry[]}
    */
   findEnclosedObjects(box) {
-    let candidates = Array.from(this.getCollisionCandidates(box))
-    if (this.isPointHash) return candidates.filter(candidate => pointIsWithinBox(candidate.bb, box))
-    return candidates.filter(candidate => boxIsWithinBox(candidate.bb, box))
+    let candidates = Array.from(this.getCollisionCandidates(box)), K = this.K
+    if (this.isPointHash) return candidates.filter(candidate => pointIsWithinBox(candidate.bb, box, K))
+    return candidates.filter(candidate => boxIsWithinBox(candidate.bb, box, K))
   }
 
   /**
@@ -141,9 +142,9 @@ class KDHash {
    * @returns {SpatialHashEntry[]}
    */
   findIntersectingObjects(box) {
-    let candidates = Array.from(this.getCollisionCandidates(box))
-    if (this.isPointHash) return candidates.filter(candidate => pointIsWithinBox(candidate.bb, box))
-    return candidates.filter(candidate => boxesIntersect(candidate.bb, box))
+    let candidates = Array.from(this.getCollisionCandidates(box)), K = this.K
+    if (this.isPointHash) return candidates.filter(candidate => pointIsWithinBox(candidate.bb, box, K))
+    return candidates.filter(candidate => boxesIntersect(candidate.bb, box, K))
   }
 
   /**
