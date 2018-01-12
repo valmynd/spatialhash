@@ -16,7 +16,7 @@ const K = 3
 /**
  * @typedef {Object} NNTask
  * @property {int} id
- * @property {Box} bb
+ * @property {number} c
  */
 
 /**
@@ -81,12 +81,12 @@ export class KDTree {
     let nodes = this.nodes
     let bestDistanceYet = Infinity
     let bestNodeYet = nodes[this.root]
-    stack.push({id: this.root, bb: this.bb})
+    stack.push({id: this.root, c: calcC(q, this.bb)})
     while (stack.length > 0) {
       let task = stack.pop()
       let node = nodes[task.id]
       // dismiss nodes (and their descendants) from the stack that are more or less obviously too far away
-      // -> that is, if it's bounding-box' distance is greater than the bestDistanceYet
+      // -> that is, if itcalcC's bounding-box' distance is greater than the bestDistanceYet
       if (squaredDistanceBetweenPointAndBox(q, task.bb, K) > bestDistanceYet) {
         continue
       }
@@ -95,19 +95,23 @@ export class KDTree {
         let axis = floor(node.level % K)
         let qV = q[axis] // value in query-point at the relevant axis for this depth
         let nV = node.point[axis] // cutting value of the current node // "SPLIT"
-        let bb, [[minX, minY], [maxX, maxY]] = task.bb // attention: dont overwrite values in task.bb....
+        let bb = [...task.bb] // attention: dont overwrite values in task.bb....
+        // [[minX, minY], [maxX, maxY]] = task.bb
         if (qV < nV) { // in this case the query-point is on the left side of the cut
+          //bb[0][axis] = nV
           // rectangle(point(split, task.rect.min.y), task.rect.max);
-          if (axis === 0) bb = [[nV, minY], [maxX, maxY]] // right
+          if (axis === 0) bb = [[nV, minY, minZ], [maxX, maxY, maxZ]] // right
           // rectangle(point(task.rect.min.x, split),task.rect.max)
-          if (axis === 1) bb = [[minX, nV], [maxX, maxY]] // left
+          if (axis === 1) bb = [[minX, nV, minZ], [maxX, maxY, maxZ]] // left
+          if (axis === 1) bb = [[minX, minY, nV], [maxX, maxY, maxZ]] // left
           stack.push({id: node.right, bb: bb}) // FAR
           node = nodes[node.left] // descend to the node with lower v (that will always be the left one) "NEAR"
         } else { // analogous to above: descend to the node with higher v, enqueue the other
           // rectangle(point(task.rect.min.x, split),task.rect.max)
-          if (axis === 0) bb = [[minX, nV], [maxX, maxY]] // upper
+          if (axis === 0) bb = [[minX, nV, minZ], [maxX, maxY, maxZ]] // upper
           // rectangle(task.rect.min, point(task.rect.max.x, split))
-          if (axis === 1) bb = [[minX, minY], [maxX, nV]] // lower
+          if (axis === 2) bb = [[minX, minY, minZ], [maxX, nV, maxZ]] // lower
+          if (axis === 1) bb = [[minX, minY, minZ], [maxX, maxY, maxZ]] // lower
           stack.push({id: node.left, bb: bb}) // FAR
           node = nodes[node.right] // NEAR
         }
@@ -123,3 +127,15 @@ export class KDTree {
   }
 }
 
+
+function inBetween(x, x0, x1) {
+  if (x < x0) return x0
+  else if (x > x1) return x1
+  return x
+}
+
+function calcC(p, bb, K = p.length) {
+  let c = new Array(K), min = bb[0], max = bb[1]
+  for (let i = 0; i < K; i++) c[i] = inBetween(p[i], min[i], max[i])
+  return c
+}
