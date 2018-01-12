@@ -1,9 +1,8 @@
 // has nothing to do with the spatial-hash implementations!
 import {nth_element} from "./cpp_stl"
-import {squaredDistanceBetweenPointAndBox, squaredDistanceBetweenPoints} from "../../geometry"
+import {distanceBetweenPoints, squaredDistanceBetweenPoints} from "../../geometry"
 
 const floor = Math.floor
-const K = 3
 
 /**
  * @typedef {Object} KDNode
@@ -16,7 +15,7 @@ const K = 3
 /**
  * @typedef {Object} NNTask
  * @property {int} id
- * @property {number} c
+ * @property {Point} c
  */
 
 /**
@@ -32,8 +31,10 @@ export class KDTree {
   /**
    * @param {Point[]} points
    * @param {Box} bb
+   * @param {int} K
    */
-  constructor(points, bb) {
+  constructor(points, bb, K = 3) {
+    this.K = K
     let len = points.length
     /** @type{KDNode[]} */
     this.nodes = new Array(len)
@@ -59,7 +60,7 @@ export class KDTree {
     let len = last - first
     if (len === 0) return -1
     let nodes = this.nodes
-    let axis = floor(depth % K)
+    let axis = floor(depth % this.K)
     let mid = first + floor(len / 2)
     nth_element(this.indices, first, mid, last, (a, b) => (nodes[a].point[axis] < nodes[b].point[axis]))
     let i = this.indices[mid]
@@ -81,43 +82,32 @@ export class KDTree {
     let nodes = this.nodes
     let bestDistanceYet = Infinity
     let bestNodeYet = nodes[this.root]
-    stack.push({id: this.root, c: calcC(q, this.bb)})
+    stack.push({id: this.root, c: calcC(q, this.bb, this.K)})
     while (stack.length > 0) {
       let task = stack.pop()
       let node = nodes[task.id]
       // dismiss nodes (and their descendants) from the stack that are more or less obviously too far away
       // -> that is, if itcalcC's bounding-box' distance is greater than the bestDistanceYet
-      if (squaredDistanceBetweenPointAndBox(q, task.bb, K) > bestDistanceYet) {
+      if (distanceBetweenPoints(q, task.c, this.K) > bestDistanceYet) {
         continue
       }
       // if not leaf: depth-first traversal to leaf node
       while (!isLeaf(node)) { // ?
-        let axis = floor(node.level % K)
+        let axis = floor(node.level % this.K)
         let qV = q[axis] // value in query-point at the relevant axis for this depth
         let nV = node.point[axis] // cutting value of the current node // "SPLIT"
-        let bb = [...task.bb] // attention: dont overwrite values in task.bb....
-        // [[minX, minY], [maxX, maxY]] = task.bb
+        let c = [...task.c] // ~copy
+        c[axis] = nV;
         if (qV < nV) { // in this case the query-point is on the left side of the cut
-          //bb[0][axis] = nV
-          // rectangle(point(split, task.rect.min.y), task.rect.max);
-          if (axis === 0) bb = [[nV, minY, minZ], [maxX, maxY, maxZ]] // right
-          // rectangle(point(task.rect.min.x, split),task.rect.max)
-          if (axis === 1) bb = [[minX, nV, minZ], [maxX, maxY, maxZ]] // left
-          if (axis === 1) bb = [[minX, minY, nV], [maxX, maxY, maxZ]] // left
-          stack.push({id: node.right, bb: bb}) // FAR
+          stack.push({id: node.right, c: c}) // FAR
           node = nodes[node.left] // descend to the node with lower v (that will always be the left one) "NEAR"
         } else { // analogous to above: descend to the node with higher v, enqueue the other
-          // rectangle(point(task.rect.min.x, split),task.rect.max)
-          if (axis === 0) bb = [[minX, nV, minZ], [maxX, maxY, maxZ]] // upper
-          // rectangle(task.rect.min, point(task.rect.max.x, split))
-          if (axis === 2) bb = [[minX, minY, minZ], [maxX, nV, maxZ]] // lower
-          if (axis === 1) bb = [[minX, minY, minZ], [maxX, maxY, maxZ]] // lower
-          stack.push({id: node.left, bb: bb}) // FAR
+          stack.push({id: node.left, c: c}) // FAR
           node = nodes[node.right] // NEAR
         }
       }
       // node is now one of the leaf nodes -> check if it's distance is better than the best-yet
-      let d = squaredDistanceBetweenPoints(q, node.point)
+      let d = squaredDistanceBetweenPoints(q, node.point, this.K)
       if (d < bestDistanceYet) {
         bestDistanceYet = d
         bestNodeYet = node
@@ -134,7 +124,7 @@ function inBetween(x, x0, x1) {
   return x
 }
 
-function calcC(p, bb, K = p.length) {
+function calcC(p, bb, K) {
   let c = new Array(K), min = bb[0], max = bb[1]
   for (let i = 0; i < K; i++) c[i] = inBetween(p[i], min[i], max[i])
   return c
