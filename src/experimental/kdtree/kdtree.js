@@ -94,19 +94,22 @@ export class KDTree {
       while (!isLeaf(node)) { // ?
         let axis = floor(node.level % K)
         let qV = q[axis] // value in query-point at the relevant axis for this depth
-        let nV = node.point[axis] // cutting value of the current node
-        let bb = [...task.bb] // operate on copy
+        let nV = node.point[axis] // cutting value of the current node // "SPLIT"
+        let bb, [[minX, minY], [maxX, maxY]] = task.bb // attention: dont overwrite values in task.bb....
         if (qV < nV) { // in this case the query-point is on the left side of the cut
-          //let [x,y,z] = bb[0]// TODO: change relevant axis values in bb!
-          bb[0][axis] = nV
-          bb[1][axis] = nV
-          stack.push({id: node.right, bb: bb})
-          node = nodes[node.left] // descend to the node with lower v (that will always be the left one)
+          // rectangle(point(split, task.rect.min.y), task.rect.max);
+          if (axis === 0) bb = [[nV, minY], [maxX, maxY]] // right
+          // rectangle(point(task.rect.min.x, split),task.rect.max)
+          if (axis === 1) bb = [[minX, nV], [maxX, maxY]] // left
+          stack.push({id: node.right, bb: bb}) // FAR
+          node = nodes[node.left] // descend to the node with lower v (that will always be the left one) "NEAR"
         } else { // analogous to above: descend to the node with higher v, enqueue the other
-          bb[0][axis] = nV // TODO: change relevant axis values in bb!
-          bb[1][axis] = nV
-          stack.push({id: node.left, bb: bb})
-          node = nodes[node.right]
+          // rectangle(point(task.rect.min.x, split),task.rect.max)
+          if (axis === 0) bb = [[minX, nV], [maxX, maxY]] // upper
+          // rectangle(task.rect.min, point(task.rect.max.x, split))
+          if (axis === 1) bb = [[minX, minY], [maxX, nV]] // lower
+          stack.push({id: node.left, bb: bb}) // FAR
+          node = nodes[node.right] // NEAR
         }
       }
       // node is now one of the leaf nodes -> check if it's distance is better than the best-yet
