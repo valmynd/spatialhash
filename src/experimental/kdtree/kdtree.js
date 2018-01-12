@@ -1,6 +1,6 @@
 // has nothing to do with the spatial-hash implementations!
 import {nth_element} from "./cpp_stl"
-import {distanceBetweenPoints, squaredDistanceBetweenPoints} from "../../geometry"
+import {squaredDistanceBetweenPoints} from "../../geometry"
 
 const floor = Math.floor
 
@@ -87,8 +87,8 @@ export class KDTree {
       let task = stack.pop()
       let node = nodes[task.id]
       // dismiss nodes (and their descendants) from the stack that are more or less obviously too far away
-      // -> that is, if itcalcC's bounding-box' distance is greater than the bestDistanceYet
-      if (distanceBetweenPoints(q, task.c, this.K) > bestDistanceYet) {
+      // -> that is, if it's bounding-box' distance is greater than the bestDistanceYet
+      if (squaredDistanceBetweenPoints(q, task.c, this.K) > bestDistanceYet) {
         continue
       }
       // if not leaf: depth-first traversal to leaf node
