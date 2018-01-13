@@ -8,8 +8,8 @@ const floor = Math.floor, min = Math.min, max = Math.max
  * @typedef {Object} KDNode
  * @property {Point} point
  * @property {int} level
- * @property {int} left
- * @property {int} right
+ * @property {int} l
+ * @property {int} r
  */
 
 /**
@@ -17,7 +17,7 @@ const floor = Math.floor, min = Math.min, max = Math.max
  * @returns {boolean}
  */
 function isLeaf(node) {
-  return node.left !== -1 && node.right !== -1
+  return node.l === -1 && node.r === -1
 }
 
 
@@ -36,7 +36,7 @@ export class KDTree {
     this.indices = new Array(len)
     for (let i = 0; i < len; i++) {
       this.indices[i] = i
-      this.nodes[i] = {point: points[i], left: -1, right: -1, level: -1}
+      this.nodes[i] = {point: points[i], l: -1, r: -1, level: -1}
     }
     this.bb = bb // bounding box of all the points within the tree
     this.root = this.arrange(0, points.length)
@@ -59,8 +59,8 @@ export class KDTree {
     nth_element(this.indices, first, mid, last, (a, b) => (nodes[a].point[axis] < nodes[b].point[axis]))
     let i = this.indices[mid]
     nodes[i].level = depth
-    nodes[i].left = this.arrange(first, mid, depth + 1)
-    nodes[i].right = this.arrange(mid + 1, last, depth + 1)
+    nodes[i].l = this.arrange(first, mid, depth + 1)
+    nodes[i].r = this.arrange(mid + 1, last, depth + 1)
     return i
   }
 
@@ -70,7 +70,7 @@ export class KDTree {
    * @param {Point} q
    * @returns {Point}
    */
-  nn(q) {
+  findNearestNeighbour(q) {
     let stack = [] // stores [node-index, closest-point] pairs
     let c = new Array(this.K) // see squaredDistanceBetweenPointAndBox(), gets adjusted below
     for (let i = 0; i < this.K; i++) c[i] = min(this.bb[1][i], max(q[i], this.bb[0][i]))
@@ -78,23 +78,25 @@ export class KDTree {
     let nodes = this.nodes, bestDistanceYet = Infinity, bestNodeYet = nodes[this.root]
     while (stack.length > 0) {
       let [nodeIndex, closestPoint] = stack.pop()
-      let node = nodes[nodeIndex]
       // dismiss nodes (and their descendants) from the stack that are more or less obviously too far away
       // -> that is, if it's bounding-box' distance is greater than the bestDistanceYet
       if (squaredDistanceBetweenPoints(q, closestPoint, this.K) > bestDistanceYet) {
         continue
       }
       // depth-first traversal to leaf node
-      while (!isLeaf(node)) {
+      let node = nodes[nodeIndex]
+      while (node && !isLeaf(node)) {
         let axis = floor(node.level % this.K)
         let cutClosestPoint = [...closestPoint]
         cutClosestPoint[axis] = node.point[axis]
         if (q[axis] < node.point[axis]) { // in this case the query-point is on the left side of the cut
-          stack.push([node.right, cutClosestPoint])
-          node = nodes[node.left]
+          if (node.r !== -1) stack.push([node.r, cutClosestPoint])
+          if (node.l === -1) break
+          node = nodes[node.l]
         } else { // analogous to above: descend to the node with higher v, enqueue the other
-          stack.push([node.left, cutClosestPoint])
-          node = nodes[node.right]
+          if (node.l !== -1) stack.push([node.l, cutClosestPoint])
+          if (node.r === -1) break
+          node = nodes[node.r]
         }
       }
       // node is now one of the leaf nodes -> check if it's distance is better than the best-yet

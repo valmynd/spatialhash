@@ -2,6 +2,8 @@ import test from "ava"
 import {surfaceNets} from "../src/experimental/kdtree/surface_nets";
 import {nth_element} from "../src/experimental/kdtree/cpp_stl";
 import {KDTree} from "../src/experimental/kdtree/kdtree";
+import {PointHash3D} from "../src/kdhash";
+import {distanceBetweenPoints} from "../src/geometry";
 
 function randomArray(rangeBegin = 0, rangeEnd = 9) {
   let arr = new Array(rangeEnd - rangeBegin)
@@ -21,24 +23,50 @@ test('nth_element', t => {
 
 const bounds = [[-10, -10, -10], [10, 10, 10]] // bounds of the sphere
 const sphere = surfaceNets([32, 32, 32], (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
+const tree = new KDTree(sphere.positions, bounds), K = 3
 
 test('make_kdtree', t => {
-  let tree = new KDTree(sphere.positions, bounds), K = 3
-  console.log(tree.nodes)
-  for (let n of tree.nodes) {
+  let nodes = tree.nodes
+  //console.log(nodes)
+  for (let n of nodes) {
     let axis = n.level % K;
-    if (n.left === -1 && n.right === -1) {
+    if (n.l === -1 && n.r === -1) {
       continue;
     }
-    if (n.left !== -1) {
-      let l = tree.nodes[n.left];
-      console.log("check l<=n at level", n.level, l.point, " <= ", n.point)
+    if (n.l !== -1) {
+      let l = nodes[n.l];
+      //console.log("check l<=n at level", n.level, l.point, " <= ", n.point)
       t.true(l.point[axis] <= n.point[axis]);
     }
-    if (n.right !== -1) {
-      let r = tree.nodes[n.right];
-      console.log("check n<=r at level", n.level, n.point, " <= ", r.point)
+    if (n.r !== -1) {
+      let r = nodes[n.r];
+      //console.log("check n<=r at level", n.level, n.point, " <= ", r.point)
       t.true(n.point[axis] <= r.point[axis]);
     }
   }
+})
+
+/**
+ * @param {Point} q
+ * @param {Point[]} points
+ * @param {int} K
+ * @returns {Point}
+ */
+function findNearestNeighborBruteForce(q, points, K) {
+  let sorted_pairs = points.map((p, i) => [i, distanceBetweenPoints(p, q, K)]).sort((a, b) => a[1] - b[1])
+  return points[sorted_pairs[0][0]]
+}
+
+test('nearest neighbor search', t => {
+  const hash = new PointHash3D()
+  for (let i = 0, len = sphere.positions.length; i < len; i++) {
+    hash.insert({id: i, bb: sphere.positions[i]})
+  }
+  //console.log(hash.cells['0,-1,-2'])
+  let q = [4, 4, 4], radius = bounds[1][0] - bounds[0][0], K = 3
+  t.is(radius, 20)
+  console.log(tree.findNearestNeighbour(q))
+  console.log(hash.findNearestNeighbours(q, 1)[0].bb)
+  console.log(hash.findNearestNeighbour(q, radius).bb)
+  console.log(findNearestNeighborBruteForce(q, sphere.positions, K))
 })
