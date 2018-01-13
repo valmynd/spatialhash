@@ -15,10 +15,12 @@ test('make_kdtree', t => {
     }
     if (n.left !== -1) {
       let l = tree.nodes[n.left];
+      console.log("check l<=n at level", n.level, l.point, " <= ", n.point)
       t.true(l.point[axis] <= n.point[axis]);
     }
     if (n.right !== -1) {
       let r = tree.nodes[n.right];
+      console.log("check n<=r at level", n.level, n.point, " <= ", r.point)
       t.true(n.point[axis] <= r.point[axis]);
     }
   }
