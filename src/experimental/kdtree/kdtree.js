@@ -85,7 +85,12 @@ export class KDTree {
       }
       // depth-first traversal to leaf node
       let node = nodes[nodeIndex]
-      while (node && !isLeaf(node)) {
+      while (!isLeaf(node)) {
+        let d = squaredDistanceBetweenPoints(q, node.point, this.K)
+        if (d < bestDistanceYet) {
+          bestDistanceYet = d
+          bestNodeYet = node
+        }
         let axis = floor(node.level % this.K)
         let cutClosestPoint = [...closestPoint]
         cutClosestPoint[axis] = node.point[axis]
@@ -98,12 +103,6 @@ export class KDTree {
           if (node.r === -1) break
           node = nodes[node.r]
         }
-      }
-      // node is now one of the leaf nodes -> check if it's distance is better than the best-yet
-      let d = squaredDistanceBetweenPoints(q, node.point, this.K)
-      if (d < bestDistanceYet) {
-        bestDistanceYet = d
-        bestNodeYet = node
       }
     }
     return bestNodeYet.point

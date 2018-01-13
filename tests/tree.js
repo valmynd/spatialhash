@@ -64,9 +64,9 @@ test('nearest neighbor search', t => {
   }
   //console.log(hash.cells['0,-1,-2'])
   let q = [4, 4, 4], radius = bounds[1][0] - bounds[0][0], K = 3
+  let correctNearestPoint = findNearestNeighborBruteForce(q, sphere.positions, K)
   t.is(radius, 20)
-  console.log(tree.findNearestNeighbour(q))
-  console.log(hash.findNearestNeighbours(q, 1)[0].bb)
-  console.log(hash.findNearestNeighbour(q, radius).bb)
-  console.log(findNearestNeighborBruteForce(q, sphere.positions, K))
+  t.is(tree.findNearestNeighbour(q), correctNearestPoint)
+  t.is(hash.findNearestNeighbours(q, 1)[0].bb, correctNearestPoint)
+  t.is(hash.findNearestNeighbour(q, radius).bb, correctNearestPoint)
 })
