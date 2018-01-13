@@ -1,5 +1,5 @@
 import test from "ava";
-import {PointHash2D, PointHash3D} from "../dist/kdhash";
+import {PointHash2D, PointHash3D} from "../src/kdhash";
 
 function makeBox({x, y, z, width, height, depth}) {
   return [[x, y, z], [x + width, y + height, z + depth]]

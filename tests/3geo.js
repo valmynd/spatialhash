@@ -2,7 +2,7 @@ import test from "ava"
 import {
   boxesIntersect, boxIsWithinBox, distanceBetweenBoxes, distanceBetweenPointAndBox, distanceBetweenPoints,
   pointIsWithinBox, squaredDistanceBetweenPointAndBox, squaredDistanceBetweenPoints
-} from "../dist/geometry";
+} from "../src/geometry";
 
 const K = 3
 

@@ -1,6 +1,3 @@
-// https://stackoverflow.com/questions/29145520/
-const floor = Math.floor
-
 /**
  * @param {number[]} arr
  * @param {int} i
@@ -10,51 +7,6 @@ function swap(arr, i, j) {
   let tmp = arr[i]
   arr[i] = arr[j]
   arr[j] = tmp
-}
-
-/**
- * @param {number[]} arr
- * @param {function} [cmp]
- */
-export function heap_sort(arr, cmp = (a, b) => a < b) {
-  make_heap(arr)
-  for (let i = arr.length - 1; i > 0; i--) {
-    swap(arr, 0, i)
-    sift_heap(arr, 0, i, cmp)
-  }
-}
-
-/**
- * @param {number[]} arr
- * @param {int} [first]
- * @param {int} [last]
- * @param {function} [cmp]
- * @param {int} [s]
- */
-export function make_heap(arr, first = 0, last = arr.length, cmp = (a, b) => a < b, s = floor(arr.length / 2 - 1)) {
-  for (let i = s; i >= first; i--){
-    sift_heap(arr, i, last, cmp)
-  }
-}
-
-/**
- * @param {number[]} arr
- * @param {int} first
- * @param {int} last
- * @param {function} cmp
- */
-function sift_heap(arr, first, last, cmp) {
-  let i = first, j, a, b
-  while (i < last) {
-    j = i
-    a = i * 2 + 1
-    b = a + 1
-    if (a < last && !cmp(arr[a], arr[j])) j = a
-    if (b < last && !cmp(arr[b], arr[j])) j = b
-    if (j === i) return
-    swap(arr, i, j)
-    i = j
-  }
 }
 
 /**
@@ -109,7 +61,7 @@ export function nth_element(arr, first, nth, last, cmp = (a, b) => a < b) {
           return
         }
       }
-      let m = first + floor(len / 2)
+      let m = first + Math.floor(len / 2)
       let lm1 = last
       let n_swaps = _sort3(arr, first, m, --lm1, cmp)
       // *m is median

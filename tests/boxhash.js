@@ -1,5 +1,5 @@
 import test from "ava";
-import {BoxHash3D} from "../dist/kdhash";
+import {BoxHash3D} from "../src/kdhash";
 
 function makeEntry({id, ...rest}) {
   return {id: id, bb: makeBox(rest)}

@@ -4,14 +4,18 @@
   "description": "Spatial Hash.",
   "main": "dist/spatialhash.js",
   "scripts": {
-    "test": "npm run build && ava",
-    "coverage": "npm run build && nyc ava",
+    "test": "ava",
+    "coverage": "nyc ava",
     "report-coverage": "npm run coverage && nyc report --reporter=lcov | codecov",
     "build": "babel src --out-dir dist",
     "build-single": "webpack"
   },
   "ava": {
-    "files": "tests/*.js"
+    "files": "tests/*.js",
+    "babel": "inherit",
+    "require": [
+      "babel-register"
+    ]
   },
   "babel": {
     "presets": [
