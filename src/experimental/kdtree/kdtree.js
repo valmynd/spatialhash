@@ -104,6 +104,11 @@ export class KDTree {
           node = nodes[node.r]
         }
       }
+      let d = squaredDistanceBetweenPoints(q, node.point, this.K) // AGAIN for the leaf node
+      if (d < bestDistanceYet) {
+        bestDistanceYet = d
+        bestNodeYet = node
+      }
     }
     return bestNodeYet.point
   }
