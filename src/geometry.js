@@ -1,4 +1,4 @@
-const sqrt = Math.sqrt, max = Math.max
+const sqrt = Math.sqrt, min = Math.min, max = Math.max
 
 /**
  * 2D Points: X,Y coordinates
@@ -66,16 +66,15 @@ export function squaredDistanceBetweenPoints(a, b, K) {
 
 /**
  * Calculate the squared distance between a point and a box
- * see http://stackoverflow.com/a/18157551
  * @param {Point} p
  * @param {Box} box
  * @param {int} K
  * @returns {number}
  */
 export function squaredDistanceBetweenPointAndBox(p, box, K) {
-  let d = 0
-  for (let i = 0; i < K; i++) d += (max(box[0][i] - p[i], 0, p[i] - box[1][i]) ** 2)
-  return d
+  let c = new Array(K) // closest point from p along the border of the box
+  for (let i = 0; i < K; i++) c[i] = min(box[1][i], max(p[i], box[0][i]))
+  return squaredDistanceBetweenPoints(p, c, K)
 }
 
 /**

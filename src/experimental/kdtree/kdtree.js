@@ -2,7 +2,7 @@
 import {nth_element} from "./cpp_stl"
 import {squaredDistanceBetweenPoints} from "../../geometry"
 
-const floor = Math.floor
+const floor = Math.floor, min = Math.min, max = Math.max
 
 /**
  * @typedef {Object} KDNode
@@ -10,12 +10,6 @@ const floor = Math.floor
  * @property {int} level
  * @property {int} left
  * @property {int} right
- */
-
-/**
- * @typedef {Object} NNTask
- * @property {int} id
- * @property {Point} c
  */
 
 /**
@@ -77,33 +71,30 @@ export class KDTree {
    * @returns {Point}
    */
   nn(q) {
-    /** @type{NNTask[]} */
-    let stack = []
-    let nodes = this.nodes
-    let bestDistanceYet = Infinity
-    let bestNodeYet = nodes[this.root]
-    stack.push({id: this.root, c: calcC(q, this.bb, this.K)})
+    let stack = [] // stores [node-index, closest-point] pairs
+    let c = new Array(this.K) // see squaredDistanceBetweenPointAndBox(), gets adjusted below
+    for (let i = 0; i < this.K; i++) c[i] = min(this.bb[1][i], max(q[i], this.bb[0][i]))
+    stack.push([this.root, c])
+    let nodes = this.nodes, bestDistanceYet = Infinity, bestNodeYet = nodes[this.root]
     while (stack.length > 0) {
-      let task = stack.pop()
-      let node = nodes[task.id]
+      let [nodeIndex, closestPoint] = stack.pop()
+      let node = nodes[nodeIndex]
       // dismiss nodes (and their descendants) from the stack that are more or less obviously too far away
       // -> that is, if it's bounding-box' distance is greater than the bestDistanceYet
-      if (squaredDistanceBetweenPoints(q, task.c, this.K) > bestDistanceYet) {
+      if (squaredDistanceBetweenPoints(q, closestPoint, this.K) > bestDistanceYet) {
         continue
       }
-      // if not leaf: depth-first traversal to leaf node
-      while (!isLeaf(node)) { // ?
+      // depth-first traversal to leaf node
+      while (!isLeaf(node)) {
         let axis = floor(node.level % this.K)
-        let qV = q[axis] // value in query-point at the relevant axis for this depth
-        let nV = node.point[axis] // cutting value of the current node // "SPLIT"
-        let c = [...task.c] // ~copy
-        c[axis] = nV;
-        if (qV < nV) { // in this case the query-point is on the left side of the cut
-          stack.push({id: node.right, c: c}) // FAR
-          node = nodes[node.left] // descend to the node with lower v (that will always be the left one) "NEAR"
+        let cutClosestPoint = [...closestPoint]
+        cutClosestPoint[axis] = node.point[axis]
+        if (q[axis] < node.point[axis]) { // in this case the query-point is on the left side of the cut
+          stack.push([node.right, cutClosestPoint])
+          node = nodes[node.left]
         } else { // analogous to above: descend to the node with higher v, enqueue the other
-          stack.push({id: node.left, c: c}) // FAR
-          node = nodes[node.right] // NEAR
+          stack.push([node.left, cutClosestPoint])
+          node = nodes[node.right]
         }
       }
       // node is now one of the leaf nodes -> check if it's distance is better than the best-yet
@@ -115,17 +106,4 @@ export class KDTree {
     }
     return bestNodeYet.point
   }
-}
-
-
-function inBetween(x, x0, x1) {
-  if (x < x0) return x0
-  else if (x > x1) return x1
-  return x
-}
-
-function calcC(p, bb, K) {
-  let c = new Array(K), min = bb[0], max = bb[1]
-  for (let i = 0; i < K; i++) c[i] = inBetween(p[i], min[i], max[i])
-  return c
 }

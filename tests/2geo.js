@@ -40,6 +40,10 @@ test('distanceBetweenPoints()', t => {
 
 test('squaredDistanceBetweenPointAndBox()', t => {
   t.is(squaredDistanceBetweenPointAndBox([1, 2], makeBox(1, 2, 100, 100), K), 0)
+  t.is(squaredDistanceBetweenPointAndBox([110, 110], makeBox(0, 0, 100, 100), K),
+    squaredDistanceBetweenPoints([110, 110], [100,100], K))
+  t.is(squaredDistanceBetweenPointAndBox([-10, -10], makeBox(0, 0, 100, 100), K),
+    squaredDistanceBetweenPoints([-10, -10], [0,0], K))
 })
 
 test('distanceBetweenPointAndBox()', t => {
