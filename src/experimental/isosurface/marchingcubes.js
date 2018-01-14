@@ -313,7 +313,7 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
   let vertices = [],
     faces = [],
     n = 0,
-    grid = new Array(8),
+    cell = new Array(8),
     edges = new Array(12),
     x = [0, 0, 0],
     z = 0
@@ -328,11 +328,11 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
             scale[0] * (x[0] + v[0]) + shift[0],
             scale[1] * (x[1] + v[1]) + shift[1],
             scale[2] * (x[2] + v[2]) + shift[2])
-          grid[i] = s
+          cell[i] = s
           cube_index |= (s > 0) ? 1 << i : 0
-          if(z < 200) console.log(i, 1 << i, {s}, cube_index)
+          //if(z < 200) console.log(i, 1 << i, {s}, cube_index)
         }
-        if (++z < 200) console.log({cube_index}, x, grid)
+        if (++z < 200) console.log({cube_index}, x, cell)
         // Compute vertices
         let edge_mask = edgeTable[cube_index]
         if (edge_mask === 0) {
@@ -347,8 +347,8 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
             e = edgeIndex[i],
             p0 = cubeVerts[e[0]],
             p1 = cubeVerts[e[1]],
-            a = grid[e[0]],
-            b = grid[e[1]],
+            a = cell[e[0]],
+            b = cell[e[1]],
             d = a - b,
             t = 0
           if (abs(d) > 1e-6) {

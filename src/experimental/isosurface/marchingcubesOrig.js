@@ -1,15 +1,14 @@
 const abs = Math.abs
 
 /**
- * @typedef {Object} Triangle
- * @property {Point[]} p (3 Points)
+ * @typedef {Point[]} Triangle (3 Points)
  */
 /**
- * @typedef {Object[]} GridCell
- * @property {Point[]} p
- * @property {number[]} val // 8 values
+ * @typedef {Object} GridCell
+ * @property {Point[]} p (8 points)
+ * @property {number[]} val (8 values)
  */
-let edgeTable = [ // [256]
+const edgeTable = [ // [256]
   0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
   0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
   0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
@@ -42,7 +41,7 @@ let edgeTable = [ // [256]
   0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
   0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
   0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0]
-let triTable = [// [256][16]
+const triTable = [// [256][16]
   [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
   [0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -306,44 +305,45 @@ let triTable = [// [256][16]
  * facets required to represent the isosurface through the cell.
  * Return array "triangles" loaded up with the vertices at most 5 triangular facets.
  * Empty array will be returned if the grid cell is either totally above of totally below the isolevel.
- * @param {GridCell} grid
+ * @param {GridCell} cell
  * @param {number} isolevel
  * @returns {Triangle[]} triangles
  */
-function polygonize(grid, isolevel) {
-  let i, ntriang, vertlist = new Array(12)
+function polygonize(cell, isolevel) {
+  let vertlist = new Array(12), triangles = []
   // Determine the index into the edge table which
   // tells us which vertices are inside of the surface
   let cubeindex = 0
-  if (grid.val[0] < isolevel) cubeindex |= 1
-  if (grid.val[1] < isolevel) cubeindex |= 2
-  if (grid.val[2] < isolevel) cubeindex |= 4
-  if (grid.val[3] < isolevel) cubeindex |= 8
-  if (grid.val[4] < isolevel) cubeindex |= 16
-  if (grid.val[5] < isolevel) cubeindex |= 32
-  if (grid.val[6] < isolevel) cubeindex |= 64
-  if (grid.val[7] < isolevel) cubeindex |= 128
+  if (cell.val[0] < isolevel) cubeindex |= 1
+  if (cell.val[1] < isolevel) cubeindex |= 2
+  if (cell.val[2] < isolevel) cubeindex |= 4
+  if (cell.val[3] < isolevel) cubeindex |= 8
+  if (cell.val[4] < isolevel) cubeindex |= 16
+  if (cell.val[5] < isolevel) cubeindex |= 32
+  if (cell.val[6] < isolevel) cubeindex |= 64
+  if (cell.val[7] < isolevel) cubeindex |= 128
   // Cube is entirely in/out of the surface
   if (edgeTable[cubeindex] === 0) return 0
   // Find the vertices where the surface intersects the cube
-  if (edgeTable[cubeindex] & 1) vertlist[0] = interp(isolevel, grid.p[0], grid.p[1], grid.val[0], grid.val[1])
-  if (edgeTable[cubeindex] & 2) vertlist[1] = interp(isolevel, grid.p[1], grid.p[2], grid.val[1], grid.val[2])
-  if (edgeTable[cubeindex] & 4) vertlist[2] = interp(isolevel, grid.p[2], grid.p[3], grid.val[2], grid.val[3])
-  if (edgeTable[cubeindex] & 8) vertlist[3] = interp(isolevel, grid.p[3], grid.p[0], grid.val[3], grid.val[0])
-  if (edgeTable[cubeindex] & 16) vertlist[4] = interp(isolevel, grid.p[4], grid.p[5], grid.val[4], grid.val[5])
-  if (edgeTable[cubeindex] & 32) vertlist[5] = interp(isolevel, grid.p[5], grid.p[6], grid.val[5], grid.val[6])
-  if (edgeTable[cubeindex] & 64) vertlist[6] = interp(isolevel, grid.p[6], grid.p[7], grid.val[6], grid.val[7])
-  if (edgeTable[cubeindex] & 128) vertlist[7] = interp(isolevel, grid.p[7], grid.p[4], grid.val[7], grid.val[4])
-  if (edgeTable[cubeindex] & 256) vertlist[8] = interp(isolevel, grid.p[0], grid.p[4], grid.val[0], grid.val[4])
-  if (edgeTable[cubeindex] & 512) vertlist[9] = interp(isolevel, grid.p[1], grid.p[5], grid.val[1], grid.val[5])
-  if (edgeTable[cubeindex] & 1024) vertlist[10] = interp(isolevel, grid.p[2], grid.p[6], grid.val[2], grid.val[6])
-  if (edgeTable[cubeindex] & 2048) vertlist[11] = interp(isolevel, grid.p[3], grid.p[7], grid.val[3], grid.val[7])
+  if (edgeTable[cubeindex] & 1) vertlist[0] = cut(isolevel, cell.p[0], cell.p[1], cell.val[0], cell.val[1])
+  if (edgeTable[cubeindex] & 2) vertlist[1] = cut(isolevel, cell.p[1], cell.p[2], cell.val[1], cell.val[2])
+  if (edgeTable[cubeindex] & 4) vertlist[2] = cut(isolevel, cell.p[2], cell.p[3], cell.val[2], cell.val[3])
+  if (edgeTable[cubeindex] & 8) vertlist[3] = cut(isolevel, cell.p[3], cell.p[0], cell.val[3], cell.val[0])
+  if (edgeTable[cubeindex] & 16) vertlist[4] = cut(isolevel, cell.p[4], cell.p[5], cell.val[4], cell.val[5])
+  if (edgeTable[cubeindex] & 32) vertlist[5] = cut(isolevel, cell.p[5], cell.p[6], cell.val[5], cell.val[6])
+  if (edgeTable[cubeindex] & 64) vertlist[6] = cut(isolevel, cell.p[6], cell.p[7], cell.val[6], cell.val[7])
+  if (edgeTable[cubeindex] & 128) vertlist[7] = cut(isolevel, cell.p[7], cell.p[4], cell.val[7], cell.val[4])
+  if (edgeTable[cubeindex] & 256) vertlist[8] = cut(isolevel, cell.p[0], cell.p[4], cell.val[0], cell.val[4])
+  if (edgeTable[cubeindex] & 512) vertlist[9] = cut(isolevel, cell.p[1], cell.p[5], cell.val[1], cell.val[5])
+  if (edgeTable[cubeindex] & 1024) vertlist[10] = cut(isolevel, cell.p[2], cell.p[6], cell.val[2], cell.val[6])
+  if (edgeTable[cubeindex] & 2048) vertlist[11] = cut(isolevel, cell.p[3], cell.p[7], cell.val[3], cell.val[7])
   // Create the triangle
-  let triangles = []
-  for (i = 0, ntriang = 0; triTable[cubeindex][i] !== -1; i += 3, ntriang++) {
-    triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i]]
-    triangles[ntriang].p[1] = vertlist[triTable[cubeindex][i + 1]]
-    triangles[ntriang].p[2] = vertlist[triTable[cubeindex][i + 2]]
+  for (let i = 0; triTable[cubeindex][i] !== -1; i += 3) {
+    triangles.push([
+      vertlist[triTable[cubeindex][i]],
+      vertlist[triTable[cubeindex][i + 1]],
+      vertlist[triTable[cubeindex][i + 2]]
+    ])
   }
   return triangles
 }
@@ -358,14 +358,14 @@ function polygonize(grid, isolevel) {
  * @param {number} value_p2
  * @returns {Point}
  */
-function interp(isolevel, p1, p2, value_p1, value_p2) {
-  let p = [0, 0, 0]
+function cut(isolevel, p1, p2, value_p1, value_p2) {
   if (abs(isolevel - value_p1) < 0.00001) return p1
   if (abs(isolevel - value_p2) < 0.00001) return p2
   if (abs(value_p1 - value_p2) < 0.00001) return p1
-  let mu = (isolevel - value_p1) / (value_p2 - value_p1)
-  p[0] = p1[0] + mu * (p2[0] - p1[0])
-  p[1] = p1[1] + mu * (p2[1] - p1[1])
-  p[2] = p1[2] + mu * (p2[2] - p1[2])
-  return p
+  let scale = (isolevel - value_p1) / (value_p2 - value_p1)
+  return [
+    p1[0] + scale * (p2[0] - p1[0]),
+    p1[1] + scale * (p2[1] - p1[1]),
+    p1[2] + scale * (p2[2] - p1[2])
+  ]
 }
