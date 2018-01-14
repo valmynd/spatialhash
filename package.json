@@ -54,7 +54,5 @@
     "codecov": "^3.0.0",
     "nyc": "^11.4.1"
   },
-  "dependencies": {
-    "babel-loader": "^7.1.2"
-  }
+  "dependencies": {}
 }

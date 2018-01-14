@@ -1,5 +1,5 @@
 import test from "ava"
-import {surfaceNets} from "../src/experimental/kdtree/surface_nets";
+import {surfaceNets} from "../src/experimental/isosurface/surfacenets";
 import {nth_element} from "../src/experimental/kdtree/cpp_stl";
 import {KDTree} from "../src/experimental/kdtree/kdtree";
 import {PointHash3D} from "../src/kdhash";

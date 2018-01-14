@@ -11,7 +11,7 @@ function swap(arr, i, j) {
 
 /**
  * ported from LLVM libc++, in libcxx/include/algorithm
- * libc++ is dual licensed under the MIT and the University of Illinois Open Source Licenses, see LICENSE_LIBCXX
+ * libc++ is dual licensed under the MIT and the University of Illinois Open Source Licenses, see LICENSE_THIRD_PARTY
  * @param {number[]} arr
  * @param {int} first
  * @param {int} nth
