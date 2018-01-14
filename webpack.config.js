@@ -1,14 +1,11 @@
-var path = require('path');
-var UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-
 module.exports = {
   entry: {
-    'app': './src/hash3d.js'
+    'app': './src/experimental/render/example.js'
   },
   output: {
     path: __dirname + '/dist',
-    filename: 'spatialhash.js',
-    library: 'spatialhash',
+    filename: 'bundle.js',
+    library: 'bundle',
     libraryTarget: 'var',
     umdNamedDefine: true
   },
@@ -18,17 +15,9 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         loader: 'babel-loader',
-        exclude: /node_modules/,
-        query: {
-          plugins: [["transform-runtime", { "polyfill": false, "helpers": false, "regenerator": true }]],
-          presets: ['es2015']
-        }
+        exclude: /node_modules/
       }
     ]
   },
-  plugins: [
-    new UglifyJSPlugin({sourceMap: true, mangle: {
-      except: ['BoxHash', 'insert', 'findNearestNeighbour', 'findNearestNeighbours', 'cells', 'key']
-    }})
-  ]
+  plugins: []
 };
