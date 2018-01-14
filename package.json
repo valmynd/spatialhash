@@ -7,7 +7,7 @@
     "test": "ava",
     "coverage": "nyc ava",
     "report-coverage": "npm run coverage && nyc report --reporter=lcov | codecov",
-    "bundle": "webpack"
+    "start": "webpack --watch"
   },
   "ava": {
     "files": "tests/*.js",

@@ -305,8 +305,7 @@ let edgeIndex = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4],
  * Based on Paul Bourke's classic implementation: http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
  */
 export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
-  let scale = [0, 0, 0]
-  let shift = [0, 0, 0]
+  let scale = [1, 1, 1], shift = [0, 0, 0]
   for (let i = 0; i < 3; ++i) {
     scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i]
     shift[i] = bounds[0][i]
@@ -316,7 +315,8 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
     n = 0,
     grid = new Array(8),
     edges = new Array(12),
-    x = [0, 0, 0]
+    x = [0, 0, 0],
+    i = 0
   // March over the volume
   for (x[2] = 0; x[2] < dims[2] - 1; ++x[2], n += dims[0]) {
     for (x[1] = 0; x[1] < dims[1] - 1; ++x[1], ++n) {
@@ -324,14 +324,14 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
         // For each cell, compute cube mask
         let cube_index = 0
         for (let i = 0; i < 8; ++i) {
-          let v = cubeVerts[i],
-            s = potential(
-              scale[0] * (x[0] + v[0]) + shift[0],
-              scale[1] * (x[1] + v[1]) + shift[1],
-              scale[2] * (x[2] + v[2]) + shift[2])
+          let v = cubeVerts[i], s = potential(
+            scale[0] * (x[0] + v[0]) + shift[0],
+            scale[1] * (x[1] + v[1]) + shift[1],
+            scale[2] * (x[2] + v[2]) + shift[2])
           grid[i] = s
           cube_index |= (s > 0) ? 1 << i : 0
         }
+        if (++i < 20) console.log({cube_index}, x, grid)
         // Compute vertices
         let edge_mask = edgeTable[cube_index]
         if (edge_mask === 0) {
