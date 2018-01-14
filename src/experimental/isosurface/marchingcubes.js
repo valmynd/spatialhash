@@ -316,7 +316,7 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
     grid = new Array(8),
     edges = new Array(12),
     x = [0, 0, 0],
-    i = 0
+    z = 0
   // March over the volume
   for (x[2] = 0; x[2] < dims[2] - 1; ++x[2], n += dims[0]) {
     for (x[1] = 0; x[1] < dims[1] - 1; ++x[1], ++n) {
@@ -330,8 +330,9 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
             scale[2] * (x[2] + v[2]) + shift[2])
           grid[i] = s
           cube_index |= (s > 0) ? 1 << i : 0
+          if(z < 200) console.log(i, 1 << i, {s}, cube_index)
         }
-        if (++i < 20) console.log({cube_index}, x, grid)
+        if (++z < 200) console.log({cube_index}, x, grid)
         // Compute vertices
         let edge_mask = edgeTable[cube_index]
         if (edge_mask === 0) {
