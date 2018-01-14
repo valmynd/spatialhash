@@ -7,9 +7,9 @@ const floor = Math.floor, min = Math.min, max = Math.max
 /**
  * @typedef {Object} KDNode
  * @property {Point} point
+ * @property {int} left
+ * @property {int} right
  * @property {int} level
- * @property {int} l
- * @property {int} r
  */
 
 /**
@@ -17,7 +17,7 @@ const floor = Math.floor, min = Math.min, max = Math.max
  * @returns {boolean}
  */
 function isLeaf(node) {
-  return node.l === -1 && node.r === -1
+  return node.left === -1 && node.right === -1
 }
 
 
@@ -26,17 +26,19 @@ export class KDTree {
    * @param {Point[]} points
    * @param {Box} bb
    * @param {int} K
+   * @param {int[]} [_presorted_indices]
    */
-  constructor(points, bb, K = 3) {
+  constructor(points, bb, K, _presorted_indices = null) {
     this.K = K
     let len = points.length
     /** @type{KDNode[]} */
     this.nodes = new Array(len)
     /** @type{int[]} */
-    this.indices = new Array(len)
+    this.indices = _presorted_indices || new Array(len)
+    this.already_sorted = _presorted_indices != null
     for (let i = 0; i < len; i++) {
-      this.indices[i] = i
-      this.nodes[i] = {point: points[i], l: -1, r: -1, level: -1}
+      this.nodes[i] = {point: points[i], left: -1, right: -1, level: -1}
+      if(!this.already_sorted) this.indices[i] = i
     }
     this.bb = bb // bounding box of all the points within the tree
     this.root = this.arrange(0, points.length)
@@ -56,11 +58,13 @@ export class KDTree {
     let nodes = this.nodes
     let axis = floor(depth % this.K)
     let mid = first + floor(len / 2)
-    nth_element(this.indices, first, mid, last, (a, b) => (nodes[a].point[axis] < nodes[b].point[axis]))
+    if(!this.already_sorted) {
+      nth_element(this.indices, first, mid, last, (a, b) => (nodes[a].point[axis] < nodes[b].point[axis]))
+    }
     let i = this.indices[mid]
     nodes[i].level = depth
-    nodes[i].l = this.arrange(first, mid, depth + 1)
-    nodes[i].r = this.arrange(mid + 1, last, depth + 1)
+    nodes[i].left = this.arrange(first, mid, depth + 1)
+    nodes[i].right = this.arrange(mid + 1, last, depth + 1)
     return i
   }
 
@@ -86,7 +90,7 @@ export class KDTree {
       // depth-first traversal to leaf node
       let node = nodes[nodeIndex]
       while (!isLeaf(node)) {
-        let d = squaredDistanceBetweenPoints(q, node.point, this.K)
+        let d = squaredDistanceBetweenPoints(q, node.point, this.K) // check for non-leaf-nodes
         if (d < bestDistanceYet) {
           bestDistanceYet = d
           bestNodeYet = node
@@ -95,16 +99,16 @@ export class KDTree {
         let cutClosestPoint = [...closestPoint]
         cutClosestPoint[axis] = node.point[axis]
         if (q[axis] < node.point[axis]) { // in this case the query-point is on the left side of the cut
-          if (node.r !== -1) stack.push([node.r, cutClosestPoint])
-          if (node.l === -1) break
-          node = nodes[node.l]
+          if (node.right !== -1) stack.push([node.right, cutClosestPoint])
+          if (node.left === -1) break
+          node = nodes[node.left]
         } else { // analogous to above: descend to the node with higher v, enqueue the other
-          if (node.l !== -1) stack.push([node.l, cutClosestPoint])
-          if (node.r === -1) break
-          node = nodes[node.r]
+          if (node.left !== -1) stack.push([node.left, cutClosestPoint])
+          if (node.right === -1) break
+          node = nodes[node.right]
         }
       }
-      let d = squaredDistanceBetweenPoints(q, node.point, this.K) // AGAIN for the leaf node
+      let d = squaredDistanceBetweenPoints(q, node.point, this.K) // check for leaf-nodes
       if (d < bestDistanceYet) {
         bestDistanceYet = d
         bestNodeYet = node
