@@ -116,32 +116,19 @@ export function triangulate(dims, func, bounds = [[0, 0, 0], dims]) {
           if (xyz[iu] === 0 || xyz[iv] === 0) {
             continue
           }
-          // Otherwise, look up adjacent edges in buffer
-          let du = R[iu], dv = R[iv]
-          // Remember to flip orientation depending on the sign of the corner.
-          if (mask & 1) {
-            faces.push([
-              buffer[m] || 0,
-              buffer[m - du] || 0,
-              buffer[m - dv] || 0
-            ])
-            faces.push([
-              buffer[m - dv] || 0,
-              buffer[m - du] || 0,
-              buffer[m - du - dv] || 0
-            ])
-          } else {
-            faces.push([
-              buffer[m] || 0,
-              buffer[m - dv] || 0,
-              buffer[m - du] || 0
-            ])
-            faces.push([
-              buffer[m - du] || 0,
-              buffer[m - dv] || 0,
-              buffer[m - du - dv] || 0
-            ])
-          }
+          // Otherwise, look up adjacent edges in buffer (flip orientation depending on the sign of the corner)
+          let du = (mask & 1) ? R[iu] : R[iv]
+          let dv = (mask & 1) ? R[iv] : R[iu]
+          faces.push([
+            buffer[m] || 0,
+            buffer[m - du] || 0,
+            buffer[m - dv] || 0
+          ])
+          faces.push([
+            buffer[m - dv] || 0,
+            buffer[m - du] || 0,
+            buffer[m - du - dv] || 0
+          ])
         }
       }
     }
