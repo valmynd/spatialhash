@@ -7,6 +7,18 @@ const sqrt = Math.sqrt, min = Math.min, max = Math.max
  */
 
 /**
+ * 2D Vectors: X,Y coordinates
+ * 3D Vectors: X,Y,Z coordinates
+ * @typedef {number[]} Vector
+ */
+
+/**
+ * 2D Size: size in X,Y Dimension
+ * 3D Size: size in X,Y,Z Dimension
+ * @typedef {number[]} Size
+ */
+
+/**
  * 2D Boxes: MIN for top left corner and MAX for bottom right corner
  * 3D Boxes: MIN for top left front corner and MAX for bottom right back corner
  * @typedef {Point[]} Box

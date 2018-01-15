@@ -1,4 +1,6 @@
 const abs = Math.abs
+// Javascript Marching Cubes Javascript port by Mikola Lysenko (see LICENSE_THIRD_PARTY)
+// Based on Paul Bourke's classic implementation: http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
 let edgeTable = new Uint32Array([
   0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
   0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -300,11 +302,15 @@ let cubeVerts = [
   [0, 1, 1]]
 let edgeIndex = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]
 
+
 /**
- * Javascript Marching Cubes Javascript port by Mikola Lysenko (see LICENSE_THIRD_PARTY)
- * Based on Paul Bourke's classic implementation: http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
+ * Polygonize a continuous function via the Marching Cubes Algorithm
+ * @param {Size} dims
+ * @param {function} func
+ * @param {Box} bounds
+ * @return {{positions: Vector[], cells: Vector[]}}
  */
-export function triangulate(dims, potential, bounds = [[0, 0, 0], dims]) {
+export function triangulate(dims, func, bounds = [[0, 0, 0], dims]) {
   let scale = [0, 0, 0]
   let shift = [0, 0, 0]
   for (let i = 0; i < 3; ++i) {
@@ -321,7 +327,7 @@ export function triangulate(dims, potential, bounds = [[0, 0, 0], dims]) {
         // for each cell, compute cube mask
         let cube_index = 0
         for (let i = 0; i < 8; ++i) {
-          let v = cubeVerts[i], s = potential(
+          let v = cubeVerts[i], s = func(
             scale[0] * (x + v[0]) + shift[0],
             scale[1] * (y + v[1]) + shift[1],
             scale[2] * (z + v[2]) + shift[2])
@@ -344,7 +350,7 @@ export function triangulate(dims, potential, bounds = [[0, 0, 0], dims]) {
             a = cell[e[0]],
             b = cell[e[1]],
             d = a - b,
-            t = (abs(d) < 0.000001) ? 0 : a / d
+            t = (abs(d) < 1e-6) ? 0 : a / d
           vertices.push([
             scale[0] * ((x + p0[0]) + t * (p1[0] - p0[0])) + shift[0],
             scale[1] * ((y + p0[1]) + t * (p1[1] - p0[1])) + shift[1],
