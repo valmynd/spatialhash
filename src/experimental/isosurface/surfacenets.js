@@ -36,7 +36,7 @@ for (let i = 0; i < buffer.length; ++i) {
  * SurfaceNets in JavaScript by Mikola Lysenko (license: MIT, see LICENSE_THIRD_PARTY)
  * Based on: S.F. Gibson, "Constrained Elastic Surface Nets". (1998) MERL Tech Report.
  */
-export function surfaceNets(dims, potential, bounds = [[0, 0, 0], dims]) {
+export function triangulate(dims, potential, bounds = [[0, 0, 0], dims]) {
   let scale = [0, 0, 0], shift = [0, 0, 0]
   for (let i = 0; i < 3; ++i) {
     scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i]

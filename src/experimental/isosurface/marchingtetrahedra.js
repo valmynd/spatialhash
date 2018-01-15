@@ -22,7 +22,7 @@ let tetra_list = [
  * Marching Tetrahedra in Javascript Javascript port by Mikola Lysenko (see LICENSE_THIRD_PARTY)
  * Based on Paul Bourke's implementation http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
  */
-export function marchingTetrahedra(dims, potential, bounds = [[0, 0, 0], dims]) {
+export function triangulate(dims, potential, bounds = [[0, 0, 0], dims]) {
   let scale = [0, 0, 0]
   let shift = [0, 0, 0]
   for (let i = 0; i < 3; ++i) {

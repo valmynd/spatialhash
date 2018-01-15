@@ -304,36 +304,31 @@ let edgeIndex = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4],
  * Javascript Marching Cubes Javascript port by Mikola Lysenko (see LICENSE_THIRD_PARTY)
  * Based on Paul Bourke's classic implementation: http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
  */
-export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
-  let scale = [1, 1, 1], shift = [0, 0, 0]
+export function triangulate(dims, potential, bounds = [[0, 0, 0], dims]) {
+  let scale = [0, 0, 0]
+  let shift = [0, 0, 0]
   for (let i = 0; i < 3; ++i) {
     scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i]
     shift[i] = bounds[0][i]
   }
-  let vertices = [],
-    faces = [],
-    n = 0,
-    cell = new Array(8),
-    edges = new Array(12),
-    x = [0, 0, 0],
-    z = 0
-  // March over the volume
-  for (x[2] = 0; x[2] < dims[2] - 1; ++x[2], n += dims[0]) {
-    for (x[1] = 0; x[1] < dims[1] - 1; ++x[1], ++n) {
-      for (x[0] = 0; x[0] < dims[0] - 1; ++x[0], ++n) {
-        // For each cell, compute cube mask
+  let n = 0, vertices = [], faces = []
+  let cell = new Array(8)
+  let edges = new Array(12)
+  // march over the volume
+  for (let z = 0; z < dims[2] - 1; ++z, n += dims[0]) {
+    for (let y = 0; y < dims[1] - 1; ++y, ++n) {
+      for (let x = 0; x < dims[0] - 1; ++x, ++n) {
+        // for each cell, compute cube mask
         let cube_index = 0
         for (let i = 0; i < 8; ++i) {
           let v = cubeVerts[i], s = potential(
-            scale[0] * (x[0] + v[0]) + shift[0],
-            scale[1] * (x[1] + v[1]) + shift[1],
-            scale[2] * (x[2] + v[2]) + shift[2])
+            scale[0] * (x + v[0]) + shift[0],
+            scale[1] * (y + v[1]) + shift[1],
+            scale[2] * (z + v[2]) + shift[2])
           cell[i] = s
           cube_index |= (s > 0) ? 1 << i : 0
-          //if(z < 200) console.log(i, 1 << i, {s}, cube_index)
         }
-        if (++z < 200) console.log({cube_index}, x, cell)
-        // Compute vertices
+        // compute vertices
         let edge_mask = edgeTable[cube_index]
         if (edge_mask === 0) {
           continue
@@ -343,23 +338,20 @@ export function marchingCubes(dims, potential, bounds = [[0, 0, 0], dims]) {
             continue
           }
           edges[i] = vertices.length
-          let nv = [0, 0, 0],
-            e = edgeIndex[i],
+          let e = edgeIndex[i],
             p0 = cubeVerts[e[0]],
             p1 = cubeVerts[e[1]],
             a = cell[e[0]],
             b = cell[e[1]],
             d = a - b,
-            t = 0
-          if (abs(d) > 1e-6) {
-            t = a / d
-          }
-          for (let j = 0; j < 3; ++j) {
-            nv[j] = scale[j] * ((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j]
-          }
-          vertices.push(nv)
+            t = (abs(d) < 0.000001) ? 0 : a / d
+          vertices.push([
+            scale[0] * ((x + p0[0]) + t * (p1[0] - p0[0])) + shift[0],
+            scale[1] * ((y + p0[1]) + t * (p1[1] - p0[1])) + shift[1],
+            scale[2] * ((z + p0[2]) + t * (p1[2] - p0[2])) + shift[2]
+          ])
         }
-        // Add faces
+        // add faces
         let f = triTable[cube_index]
         for (let i = 0; i < f.length; i += 3) {
           faces.push([edges[f[i]], edges[f[i + 1]], edges[f[i + 2]]])

@@ -1,11 +1,11 @@
-import {surfaceNets} from "../isosurface/surfacenets"
-import {marchingCubes} from "../isosurface/marchingcubes";
+import {triangulate as triangulateSN} from "../isosurface/surfacenets"
+import {triangulate as triangulateMC} from "../isosurface/marchingcubes";
 import mat4 from "gl-mat4"
 import initREGL from "regl"
 const regl = initREGL(document.body)
 const bounds = [[-10, -10, -10], [10, 10, 10]] // bounds of the sphere
-const sphereSN = surfaceNets([32, 32, 32], (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
-const sphereMC = marchingCubes([32, 32, 32], (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
+const sphereSN = triangulateSN([32, 32, 32], (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
+const sphereMC = triangulateMC([32, 32, 32], (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
 const sphere = sphereMC
 const draw = regl({
   primitive: "lines",

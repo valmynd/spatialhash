@@ -323,7 +323,7 @@ function polygonize(cell, isolevel) {
   if (cell.val[6] < isolevel) cubeindex |= 64
   if (cell.val[7] < isolevel) cubeindex |= 128
   // Cube is entirely in/out of the surface
-  if (edgeTable[cubeindex] === 0) return 0
+  if (edgeTable[cubeindex] === 0) return []
   // Find the vertices where the surface intersects the cube
   if (edgeTable[cubeindex] & 1) vertlist[0] = cut(isolevel, cell.p[0], cell.p[1], cell.val[0], cell.val[1])
   if (edgeTable[cubeindex] & 2) vertlist[1] = cut(isolevel, cell.p[1], cell.p[2], cell.val[1], cell.val[2])
