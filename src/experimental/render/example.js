@@ -1,14 +1,20 @@
 import {triangulate as triangulateSN} from "../isosurface/surfacenets"
 import {triangulate as triangulateMC} from "../isosurface/marchingcubes";
 import {triangulate as triangulateTT} from "../isosurface/marchingtetrahedra";
+import {sphere as sphereIH} from "./spheres";
 import mat4 from "gl-mat4"
 import initREGL from "regl"
-const regl = initREGL(document.body)
+
+const regl = initREGL()
 const d = 16, dims = [d, d, d], bounds = [[-10, -10, -10], [10, 10, 10]] // dims and bounds of the sphere
 const sphereSN = triangulateSN(dims, (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
 const sphereMC = triangulateMC(dims, (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
 const sphereTT = triangulateTT(dims, (x, y, z) => (Math.sqrt(x ** 2 + y ** 2 + z ** 2) - 7), bounds)
-const sphere = sphereSN
+const sphere = sphereIH
+
+console.log(sphere)
+
+
 const draw = regl({
   primitive: "lines",
   vert: `
