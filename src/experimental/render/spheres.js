@@ -127,3 +127,85 @@ function subdivideMesh(meshIn) {
 
 export const sphere = subdivideMesh(subdivideMesh(icosahedron()))
 
+
+/**
+ * Create a triangular facet approximation to a sphere
+ * Return the number of facets created.
+ * The number of facets will be (4^iterations) * 8
+ * Ported from C Code from Paul Bourke, see http://paulbourke.net/geometry/circlesphere/
+ */
+function createNSphere(iterations = 0) {
+  let f = []
+  for (let i = 0; i < 8; i++) f.push([0, 0, 0])
+  let p = [0, 0, 1, 0, 0, -1, -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0]
+  let pa = [0, 0, 0], pb = [0, 0, 0], pc = [0, 0, 0] // points
+  let nt_old // integer
+  let a = 1 / Math.sqrt(2) // float
+  for (let i = 0; i < 6; i++) {
+    p[i] *= a
+  }
+  f[0][0] = p[0]
+  f[0][1] = p[3]
+  f[0][2] = p[4]
+  f[1][0] = p[0]
+  f[1][1] = p[4]
+  f[1][2] = p[5]
+  f[2][0] = p[0]
+  f[2][1] = p[5]
+  f[2][2] = p[2]
+  f[3][0] = p[0]
+  f[3][1] = p[2]
+  f[3][2] = p[3]
+  f[4][0] = p[1]
+  f[4][1] = p[4]
+  f[4][2] = p[3]
+  f[5][0] = p[1]
+  f[5][1] = p[5]
+  f[5][2] = p[4]
+  f[6][0] = p[1]
+  f[6][1] = p[2]
+  f[6][2] = p[5]
+  f[7][0] = p[1]
+  f[7][1] = p[3]
+  f[7][2] = p[2]
+  let nt = 8
+  if (iterations < 1) return {positions: [pa, pb, pc], cells: f}
+  /* Bisect each edge and move to the surface of a unit sphere */
+  for (let it = 0; it < iterations; it++) {
+    nt_old = nt
+    for (let i = 0; i < nt_old; i++) {
+      pa[0] = (f[i][0][0] + f[i][1][0]) / 2
+      pa[1] = (f[i][0][1] + f[i][1][1]) / 2
+      pa[2] = (f[i][0][2] + f[i][1][2]) / 2
+      pb[0] = (f[i][1][0] + f[i][2][0]) / 2
+      pb[1] = (f[i][1][1] + f[i][2][1]) / 2
+      pb[2] = (f[i][1][2] + f[i][2][2]) / 2
+      pc[0] = (f[i][2][0] + f[i][0][0]) / 2
+      pc[1] = (f[i][2][1] + f[i][0][1]) / 2
+      pc[2] = (f[i][2][2] + f[i][0][2]) / 2
+      normalize(pa)
+      normalize(pb)
+      normalize(pc)
+      f[nt][0] = f[i][0]
+      f[nt][1] = pa
+      f[nt][2] = pc
+      nt++
+      f[nt][0] = pa
+      f[nt][1] = f[i][1]
+      f[nt][2] = pb
+      nt++
+      f[nt][0] = pb
+      f[nt][1] = f[i][2]
+      f[nt][2] = pc
+      nt++
+      f[i][0] = pa
+      f[i][1] = pb
+      f[i][2] = pc
+    }
+  }
+  return {positions: [pa, pb, pc], cells: f}
+}
+
+
+//export const sphere = createNSphere(8)
+//console.log(sphere)
